@@ -3,18 +3,18 @@
  * @since 0.0.1
  */
 export class BaseModule {
-	#default;
-	#parameters;
+	#values;
 
-	constructor(inquirer, options, parameters) {
-		this.#default = inquirer.constants.pieceDefault;
-		this.#parameters = parameters;
+	constructor(inquirer, config, options, values) {
 		this.inquirer = inquirer;
+
+		this.#values = values;
+		this.#config = config;
 
 		for (const option of options) {
 			Object.defineProperty(this, option.id, {
 				get() {
-					return this._setOptionParameter(option);
+					return this._getOptionValue(option);
 				},
 				writable: false,
 				configurable: false,
@@ -22,7 +22,7 @@ export class BaseModule {
 			});
 		}
 
-		if (this.executor) {
+		if (this.useExecutor) {
 			if (!this.run)
 				throw new Error(
 					`Module '${this.name}' must be have a method 'run'`
@@ -32,8 +32,16 @@ export class BaseModule {
 					`Method 'run' of module '${this.name}' must be an AsyncFunction`
 				);
 		}
-		this.run = this.run.bind(this);
-		this.execute = this.executor ? this.execute.bind(this) : undefined;
+		this.run = this.useExecutor ? this.run.bind(this) : undefined;
+		this.execute = this.useExecutor ? this.execute.bind(this) : undefined;
+	}
+
+	get dependent() {
+		return config.dependent || false;
+	}
+
+	get useExecutor() {
+		return config.useExecutor || false;
 	}
 
 	/**
@@ -52,7 +60,7 @@ export class BaseModule {
 	}
 
 	/**
-	 * Safely method "init"
+	 * Initialize the module
 	 * @since 0.0.1
 	 */
 	async initialize() {
@@ -69,15 +77,15 @@ export class BaseModule {
 	}
 
 	/**
-	 * Get parameter of option
+	 * Get option value
 	 * @since 0.0.1
 	 * @param {*} option The option of parameter
 	 * @returns parameter or undefined
 	 */
-	_setOptionParameter(option) {
-		const parameter = this.#parameters[option.id];
+	_getOptionValue(option) {
+		const parameter = this.#values[option.id];
 		if (!option.required && !parameter)
-			return option.default ? option.default : this.#default[option.id];
+			return option.default ? option.default : null;
 		if (option.required && !parameter)
 			throw new Error(`Module must be have the parameter '${option}'`);
 
@@ -90,12 +98,18 @@ export class BaseModule {
 			);
 		if (option.type && parameter.__proto__.constructor !== option.type)
 			throw new Error(
-				`Type of parameter '${option.name}' must be '${option.type.name}'`
+				`Type of parameter '${option.id}' must be '${option.type.name}'`
 			);
 		return parameter;
 	}
 
-	_addOptionParameter(id, value) {
+	/**
+	 * Add new option with value
+	 * @since 0.0.1
+	 * @param {*} id Option identifier
+	 * @param {*} value The parameter
+	 */
+	_addOption(id, value) {
 		if (this[id]) this.controller.fatal("option_already_exists", id);
 		if (!value) this.controller.fatal("value_not_specified", id);
 		Object.defineProperty(this, id, {

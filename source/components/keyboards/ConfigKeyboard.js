@@ -1,8 +1,8 @@
 import { BaseKeyboard } from "../../../libraries/components/base/BaseKeyboard.js";
 
 export default class ConfigKeyboard extends BaseKeyboard {
-	constructor(inquirer) {
-		super(inquirer, {
+	constructor(inquirer, user) {
+		super(inquirer, user, {
 			name: "config",
 			buttons: [["set_temperature", "set_language"]],
 		});

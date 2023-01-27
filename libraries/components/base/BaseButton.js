@@ -15,7 +15,7 @@ export class BaseButton extends BaseModule {
 			parameters
 		);
 		this.user = user;
-		this._addOptionParameter(
+		this._addOption(
 			"text",
 			inquirer.components.languages
 				.get(user.language)

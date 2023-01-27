@@ -31,14 +31,6 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * Library modules are dependent of some object
-	 * @since 0.0.1
-	 */
-	get dependent() {
-		return this.#parameters.dependent || this.#default.dependent;
-	}
-
-	/**
 	 * Base name of library
 	 * @since 0.0.1
 	 */
@@ -223,12 +215,10 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * Set value to collection
+	 * Set accidence to collection
 	 * @since 0.0.1
-	 * @param {*} collectionName String identifier of collection
-	 * @param {*} key Key of value to save to collection
-	 * @param {*} value Value that will be saved to collection
-	 * @returns
+	 * @param {*} accidence The accidence to set
+	 * @returns Boolean value
 	 */
 	_setAccidence(accidence) {
 		try {

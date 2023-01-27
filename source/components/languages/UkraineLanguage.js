@@ -7,6 +7,10 @@ export default class UkraineLanguage extends BaseLanguage {
 		});
 	}
 
+	get localKeys() {
+		return {};
+	}
+
 	get keys() {
 		return {
 			functionalIsDeveloping:
