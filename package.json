@@ -1,0 +1,36 @@
+{
+	"name": "inquirer",
+	"version": "1.0.0-alpha",
+	"type": "module",
+	"description": "Telegram bot to answer to users questions using AI.",
+	"main": "client.js",
+	"scripts": {
+		"start": "node .",
+		"dev": "nodemon ."
+	},
+	"keywords": [
+		"telegram",
+		"telegraf",
+		"bot",
+		"ai",
+		"telegram bot",
+		"telegram bot ai",
+		"telegraf bot",
+		"telegraf bot ai"
+	],
+	"author": "Roman Stupnitskyi <bamburov.r.v@gmail.com>",
+	"license": "ISC",
+	"dependencies": {
+		"@telegraf/session": "^1.0.1",
+		"centra": "^2.6.0",
+		"chalk": "^5.2.0",
+		"dotenv": "^16.0.3",
+		"fs-nextra": "^0.5.1",
+		"mysql2": "^2.3.3",
+		"telegraf": "^4.11.2",
+		"uuid": "^9.0.0"
+	},
+	"devDependencies": {
+		"nodemon": "^2.0.20"
+	}
+}
