@@ -5,7 +5,7 @@
 export class BaseModule {
 	#values;
 
-	constructor(inquirer, config, options, values) {
+	constructor(inquirer, { config, options }, values) {
 		this.inquirer = inquirer;
 
 		this.#values = values;
@@ -14,7 +14,7 @@ export class BaseModule {
 		for (const option of options) {
 			Object.defineProperty(this, option.id, {
 				get() {
-					return this._getOptionValue(option);
+					return this._handleOptionValue(option);
 				},
 				writable: false,
 				configurable: false,
@@ -65,10 +65,13 @@ export class BaseModule {
 	 */
 	async initialize() {
 		try {
+			const Controller = this.library.controllers.get(this.baseName);
+			if (Controller)
+				this.controller = new Controller(this.inquirer, accidence);
 			if (!this.controller)
 				this.inquirer.logger.error(
 					this.title,
-					`Piece '${this.name}' doesn't have a controller`
+					`Module '${this.name}' doesn't have a controller`
 				);
 			await this.init();
 		} catch (error) {
@@ -82,7 +85,7 @@ export class BaseModule {
 	 * @param {*} option The option of parameter
 	 * @returns parameter or undefined
 	 */
-	_getOptionValue(option) {
+	_handleOptionValue(option) {
 		const parameter = this.#values[option.id];
 		if (!option.required && !parameter)
 			return option.default ? option.default : null;

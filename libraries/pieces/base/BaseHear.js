@@ -9,30 +9,36 @@ export class BaseHear extends BaseModule {
 	constructor(inquirer, parameters = {}) {
 		super(
 			inquirer,
-			[
-				{
-					id: "name",
-					type: String,
-					required: true,
-					unique: true,
+			{
+				config: {
+					dependent: true,
+					useExecutor: true,
 				},
-				{
-					id: "targets",
-					type: Array,
-					required: true,
-					unique: true,
-				},
-				{
-					id: "hidden",
-					type: Boolean,
-					default: false,
-				},
-				{
-					id: "stable",
-					type: Boolean,
-					default: false,
-				},
-			],
+				options: [
+					{
+						id: "name",
+						type: String,
+						required: true,
+						unique: true,
+					},
+					{
+						id: "targets",
+						type: Array,
+						required: true,
+						unique: true,
+					},
+					{
+						id: "hidden",
+						type: Boolean,
+						default: false,
+					},
+					{
+						id: "stable",
+						type: Boolean,
+						default: false,
+					},
+				],
+			},
 			parameters
 		);
 	}

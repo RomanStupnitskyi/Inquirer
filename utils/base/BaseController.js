@@ -21,6 +21,8 @@ export class BaseController extends EventEmitter {
 		this.#default = inquirer.constants.controllerDefault;
 		this.#parameters = parameters;
 		this.#piece = piece ? piece : undefined;
+
+		this.initialize();
 	}
 
 	/**

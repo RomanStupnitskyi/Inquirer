@@ -4,29 +4,35 @@ export class BaseKeyboard extends BaseModule {
 	constructor(inquirer, user, parameters) {
 		super(
 			inquirer,
-			[
-				{
-					id: "name",
-					type: String,
-					required: true,
-					unique: true,
+			{
+				config: {
+					dependent: true,
+					useExecutor: false,
 				},
-				{
-					id: "buttons",
-					type: Array,
-					default: [],
-				},
-				{
-					id: "resize_keyboard",
-					type: Boolean,
-					default: true,
-				},
-				{
-					id: "hidden",
-					type: Boolean,
-					default: false,
-				},
-			],
+				options: [
+					{
+						id: "name",
+						type: String,
+						required: true,
+						unique: true,
+					},
+					{
+						id: "buttons",
+						type: Array,
+						default: [],
+					},
+					{
+						id: "resize_keyboard",
+						type: Boolean,
+						default: true,
+					},
+					{
+						id: "hidden",
+						type: Boolean,
+						default: false,
+					},
+				],
+			},
 			parameters
 		);
 		this.user = user;
@@ -53,7 +59,8 @@ export class BaseKeyboard extends BaseModule {
 			}
 		}
 
-		return [...buttons, this.name !== "menu" ? [back] : []];
+		if (this.name !== "menu") buttons.push([back]);
+		return buttons;
 	}
 
 	keyboard() {

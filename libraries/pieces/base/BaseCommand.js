@@ -9,33 +9,39 @@ export class BaseCommand extends BaseModule {
 	constructor(inquirer, parameters = {}) {
 		super(
 			inquirer,
-			[
-				{
-					id: "name",
-					type: String,
-					required: true,
-					unique: true,
+			{
+				config: {
+					dependent: true,
+					useExecutor: true,
 				},
-				{
-					id: "description",
-					type: String,
-					default: "Inquirer command",
-				},
-				{
-					id: "cooldown",
-					type: Object,
-				},
-				{
-					id: "hidden",
-					type: Boolean,
-					default: true,
-				},
-				{
-					id: "stable",
-					type: Boolean,
-					default: false,
-				},
-			],
+				options: [
+					{
+						id: "name",
+						type: String,
+						required: true,
+						unique: true,
+					},
+					{
+						id: "description",
+						type: String,
+						default: "Inquirer command",
+					},
+					{
+						id: "cooldown",
+						type: Object,
+					},
+					{
+						id: "hidden",
+						type: Boolean,
+						default: true,
+					},
+					{
+						id: "stable",
+						type: Boolean,
+						default: false,
+					},
+				],
+			},
 			parameters
 		);
 	}

@@ -9,19 +9,25 @@ export class BaseMiddleware extends BaseModule {
 	constructor(inquirer, parameters = {}) {
 		super(
 			inquirer,
-			[
-				{
-					id: "name",
-					type: String,
-					required: true,
-					unique: true,
+			{
+				config: {
+					dependent: true,
+					useExecutor: true,
 				},
-				{
-					id: "stable",
-					type: Boolean,
-					default: false,
-				},
-			],
+				options: [
+					{
+						id: "name",
+						type: String,
+						required: true,
+						unique: true,
+					},
+					{
+						id: "stable",
+						type: Boolean,
+						default: false,
+					},
+				],
+			},
 			parameters
 		);
 	}

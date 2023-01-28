@@ -10,7 +10,7 @@ export default class BaseHandlerMiddleware extends BaseMiddleware {
 	constructor(inquirer) {
 		super(inquirer, {
 			name: "baseHandler",
-			static: true,
+			stable: true,
 		});
 	}
 
@@ -33,7 +33,6 @@ export default class BaseHandlerMiddleware extends BaseMiddleware {
 		}
 		let record = await ctx.telegram["mysql"].user.get({ id: user.id }, true);
 		record = record[0];
-		const isOwner = this.inquirer.constants.owners.ids.includes(user.id);
 		ctx.user = {
 			id: user.id,
 			username: `${user.first_name} ${user.last_name}`,

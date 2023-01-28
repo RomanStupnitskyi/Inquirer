@@ -4,14 +4,20 @@ export class BaseButton extends BaseModule {
 	constructor(inquirer, user, parameters) {
 		super(
 			inquirer,
-			[
-				{
-					id: "name",
-					type: String,
-					required: true,
-					unique: true,
+			{
+				config: {
+					dependent: true,
+					useExecutor: true,
 				},
-			],
+				options: [
+					{
+						id: "name",
+						type: String,
+						required: true,
+						unique: true,
+					},
+				],
+			},
 			parameters
 		);
 		this.user = user;

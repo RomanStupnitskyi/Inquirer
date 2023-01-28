@@ -1,5 +1,4 @@
 import { BaseMiddleware } from "../../../libraries/pieces/base/BaseMiddleware.js";
-import { Collection } from "../../../utils/Collection.js";
 
 /**
  * Middleware class to handle basical data
@@ -10,7 +9,7 @@ export default class BaseHandlerMiddleware extends BaseMiddleware {
 	constructor(inquirer) {
 		super(inquirer, {
 			name: "basePermissions",
-			static: true,
+			stable: true,
 		});
 	}
 

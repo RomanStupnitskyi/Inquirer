@@ -11,7 +11,6 @@ export class PiecesLibrary extends BaseLibrary {
 	constructor(inquirer) {
 		super(inquirer, {
 			name: "pieces",
-			dependent: true,
 			modules: { commands, hears },
 		});
 	}

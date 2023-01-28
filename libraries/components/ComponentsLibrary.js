@@ -11,8 +11,7 @@ export class ComponentsLibrary extends BaseLibrary {
 	constructor(inquirer) {
 		super(inquirer, {
 			name: "components",
-			multiBase: true,
-			base: { buttons, keyboards, languages },
+			modules: { buttons, keyboards, languages },
 		});
 	}
 

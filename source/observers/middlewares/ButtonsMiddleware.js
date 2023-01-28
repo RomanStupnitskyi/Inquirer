@@ -8,7 +8,7 @@ import { BaseMiddleware } from "../../../libraries/observers/base/BaseMiddleware
 export default class HearsHandlerMiddleware extends BaseMiddleware {
 	constructor(inquirer) {
 		super(inquirer, {
-			name: "hearsHandler",
+			name: "buttonsHandler",
 		});
 	}
 

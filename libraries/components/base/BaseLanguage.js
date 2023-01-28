@@ -13,14 +13,20 @@ export class BaseLanguage extends BaseModule {
 	constructor(inquirer, user, parameters) {
 		super(
 			inquirer,
-			[
-				{
-					id: "name",
-					type: String,
-					required: true,
-					unique: true,
+			{
+				config: {
+					dependent: false,
+					useExecutor: false,
 				},
-			],
+				options: [
+					{
+						id: "name",
+						type: String,
+						required: true,
+						unique: true,
+					},
+				],
+			},
 			parameters
 		);
 		this.user = user;

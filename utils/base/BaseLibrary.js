@@ -76,15 +76,6 @@ export class BaseLibrary {
 						directory,
 						filePath
 					);
-
-					const Controller = this.controllers.get(accidence.baseName);
-					if (Controller) {
-						accidence.controller = new Controller(
-							this.inquirer,
-							accidence
-						);
-						accidence.controller.initialize();
-					}
 					this._setAccidence(accidence);
 				}
 			}

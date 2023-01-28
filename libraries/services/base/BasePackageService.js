@@ -10,6 +10,10 @@ export class BasePackageService extends BaseModule {
 		super(
 			inquirer,
 			{
+				config: {
+					dependent: false,
+					useExecutor: false,
+				},
 				options: [
 					{
 						id: "name",
