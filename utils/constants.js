@@ -34,44 +34,48 @@ export default {
 	},
 
 	// Default library parameters
-	libraryDefault: {
-		name: "library", // String identifier
-		dependent: false, // Library modules are dependent of some object (must save as class)
+	library: {
+		name: "library",
+		dependent: false,
 	},
 
 	// Default controller parameters
-	controllerDefault: {
-		name: "controller", // String identifier
-		target: null, // Target of controller
-		construction: true, // Controller is constructor (used with new in load)
+	controllers: {
+		name: "controllers",
+		target: null,
+		construction: true,
 	},
 
-	// Default module parameters
-	serviceDefault: {
-		name: "module", // String identifier
-		preserve: false, // Save module to Telegram bot client "Inquirer"
-		useContext: false, // Module can be used with ContextHandlers
-		enabled: true, // Module is enabled if true
-	},
-
-	// Default piece parameters
-	pieceDefault: {
-		name: "piece", // String identifier
-		description: "I have any word about that...", // Description of piece
+	listeners: {
+		name: "listeners",
+		once: false,
 		cooldown: {
-			duration: 0,
 			count: 0,
+			duration: 0,
 		},
 	},
 
+	commands: {
+		name: "commands",
+		cooldown: {
+			count: 0,
+			duration: 0,
+		},
+	},
+
+	// Default module parameters
+	services: {
+		name: "services",
+	},
+
 	// Default button parameters
-	buttonDefault: {
+	button: {
 		id: "button",
 		useHear: true,
 	},
 
 	// Default keyboard parameters
-	keyboardDefault: {
+	keyboard: {
 		name: "keyboard",
 		resize_keyboard: true,
 		hidden: false,
@@ -83,9 +87,9 @@ export default {
 	// Application paths
 	paths: {
 		root: _str2path("./source/"),
-		modules: _str2path("./source/modules/"),
-		controllers: _str2path("./source/controllers/"),
+		services: _str2path("./source/services/"),
 		components: _str2path("./source/components/"),
+		observers: _str2path("./source/observers/"),
 		pieces: _str2path("./source/pieces/"),
 		dbTables: _str2path("./core/database/tables/"),
 	},

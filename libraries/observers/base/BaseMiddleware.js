@@ -37,7 +37,7 @@ export class BaseMiddleware extends BaseModule {
 	 * @since 0.0.1
 	 * @returns Current middleware class
 	 */
-	initialize() {
+	prepare() {
 		const _execute = async function (...args) {
 			const middleware = this.inquirer.pieces.middlewares.get(this.name);
 			if (middleware) await this["execute"](...args);

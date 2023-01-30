@@ -1,10 +1,11 @@
 import { BaseModule } from "../../../utils/base/BaseModule.js";
 
 export class BaseButton extends BaseModule {
-	constructor(inquirer, user, parameters) {
+	constructor(inquirer, depends, parameters = {}) {
 		super(
 			inquirer,
 			{
+				depends,
 				config: {
 					dependent: true,
 					useExecutor: true,
@@ -20,7 +21,6 @@ export class BaseButton extends BaseModule {
 			},
 			parameters
 		);
-		this.user = user;
 		this._addOption(
 			"text",
 			inquirer.components.languages

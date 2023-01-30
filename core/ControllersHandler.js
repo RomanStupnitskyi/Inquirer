@@ -66,7 +66,6 @@ export class ControllersHandler {
 					if (collection === "target")
 						controller.target.controller = controller;
 					else this.inquirer[collection].controllers.set(name, controller);
-					if (controller.construction) controller.initialize();
 				}
 				size += this[collection].size;
 			}

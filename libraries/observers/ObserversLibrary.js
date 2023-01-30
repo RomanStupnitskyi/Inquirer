@@ -19,7 +19,7 @@ export class ObserversLibrary extends BaseLibrary {
 	 * Initialize default middlewares
 	 * @returns Current class
 	 */
-	async _prepareAccidences() {
+	async _prepareModules() {
 		for (const middleware of this.inquirer.constants.middlewares) {
 			this.inquirer.use(middleware);
 		}

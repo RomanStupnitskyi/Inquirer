@@ -6,10 +6,11 @@ import { BaseModule } from "../../../utils/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseCommand extends BaseModule {
-	constructor(inquirer, parameters = {}) {
+	constructor(inquirer, depends, parameters = {}) {
 		super(
 			inquirer,
 			{
+				depends,
 				config: {
 					dependent: true,
 					useExecutor: true,
@@ -51,7 +52,7 @@ export class BaseCommand extends BaseModule {
 	 * @since 0.0.1
 	 * @returns Current command class
 	 */
-	initialize() {
+	prepare() {
 		if (!this.inquirer.constants.telegrafCommands) return this;
 		const _execute = async function (ctx) {
 			const command = this.inquirer.listeners.get(this.name);

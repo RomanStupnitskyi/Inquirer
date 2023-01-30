@@ -1,4 +1,4 @@
-import { BaseMiddleware } from "../../../libraries/pieces/base/BaseMiddleware.js";
+import { BaseMiddleware } from "../../../libraries/observers/base/BaseMiddleware.js";
 
 /**
  * Middleware class to handle commands

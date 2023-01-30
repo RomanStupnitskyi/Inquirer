@@ -1,27 +1,27 @@
 /**
- * Base module
+ * Base module class
  * @since 0.0.1
  */
 export class BaseModule {
 	#values;
+	#parameters;
 
-	constructor(inquirer, { config, options }, values) {
+	constructor(inquirer, parameters, values) {
 		this.inquirer = inquirer;
 
 		this.#values = values;
-		this.#config = config;
+		this.#parameters = parameters;
 
-		for (const option of options) {
+		// Register and handle options
+		for (const option of parameters.options) {
 			Object.defineProperty(this, option.id, {
-				get() {
-					return this._handleOptionValue(option);
-				},
-				writable: false,
+				value: this._handleOptionValue(option),
 				configurable: false,
 				enumerable: false,
 			});
 		}
 
+		// Check module executor
 		if (this.useExecutor) {
 			if (!this.run)
 				throw new Error(
@@ -32,22 +32,38 @@ export class BaseModule {
 					`Method 'run' of module '${this.name}' must be an AsyncFunction`
 				);
 		}
-		this.run = this.useExecutor ? this.run.bind(this) : undefined;
-		this.execute = this.useExecutor ? this.execute.bind(this) : undefined;
-	}
+		this.run = this.#parameters.config.useExecutor
+			? this.run.bind(this)
+			: undefined;
+		this.execute = this.#parameters.config.useExecutor
+			? this.execute.bind(this)
+			: undefined;
 
-	get dependent() {
-		return config.dependent || false;
-	}
-
-	get useExecutor() {
-		return config.useExecutor || false;
+		// Auto-Initialization if module is dependent
+		if (this.#parameters.config.dependent && this.#parameters.depends)
+			this.initialize();
 	}
 
 	/**
-	 * Safely method "run"
+	 * Module is dependent of some objects
 	 * @since 0.0.1
-	 * @param  {...any} args Some args to run piece
+	 */
+	get dependent() {
+		return this.#parameters.config.dependent || false;
+	}
+
+	/**
+	 * Module must have the executor
+	 * @since 0.0.1
+	 */
+	get useExecutor() {
+		return this.#parameters.config.useExecutor || false;
+	}
+
+	/**
+	 * Module executor
+	 * @since 0.0.1
+	 * @param  {...any} args Some args to run module
 	 */
 	async execute(...args) {
 		try {
@@ -63,54 +79,78 @@ export class BaseModule {
 	 * Initialize the module
 	 * @since 0.0.1
 	 */
-	async initialize() {
+	initialize() {
 		try {
+			// Add controller
 			const Controller = this.library.controllers.get(this.baseName);
-			if (Controller)
-				this.controller = new Controller(this.inquirer, accidence);
+			if (Controller) this.controller = new Controller(this.inquirer, this);
 			if (!this.controller)
 				this.inquirer.logger.error(
-					this.title,
+					`${this.baseName}:${this.name}`,
 					`Module '${this.name}' doesn't have a controller`
 				);
-			await this.init();
+
+			// Handle required objects
+			if (this.dependent) {
+				const depends = this.#parameters.config.depends;
+				if (!depends) this.controller.emit("dependent_error");
+				if (!(typeof depends !== "object"))
+					this.controller.emit("dependent_type_error");
+				if (depends[Symbol.iterator])
+					this.controller.emit("dependent_iterator_error");
+
+				for (const [key, value] in depends)
+					Object.defineProperty(this, key, {
+						value,
+						writable: false,
+						configurable: false,
+						enumerable: false,
+					});
+			}
+			if (this.prepare) this.prepare();
 		} catch (error) {
 			this.controller.emit("init_error", error);
 		}
 	}
 
 	/**
-	 * Get option value
+	 * Handle option's value
 	 * @since 0.0.1
-	 * @param {*} option The option of parameter
-	 * @returns parameter or undefined
+	 * @param {*} option The option
+	 * @returns value or undefined
 	 */
 	_handleOptionValue(option) {
 		const parameter = this.#values[option.id];
 		if (!option.required && !parameter)
-			return option.default ? option.default : null;
+			return option.default
+				? option.default
+				: this.inquirer.constants[this.baseName][option.id];
 		if (option.required && !parameter)
-			throw new Error(`Module must be have the parameter '${option}'`);
-
-		const has = this.inquirer[this.library.name][this.baseName].hasByValue({
+			this.inquirer.logger.fatal(
+				this.title,
+				`Module must be have the parameter '${option}'`
+			);
+		const has = this.library[this.baseName].hasByValue({
 			[option.id]: parameter,
 		});
 		if (option.unique && has)
-			throw new Error(
+			this.inquirer.logger.fatal(
+				this.title,
 				`In module '${this.name}' value of parameter '${option}' already exists in another module. The value of parameter '${parameter}' must be unique.`
 			);
 		if (option.type && parameter.__proto__.constructor !== option.type)
-			throw new Error(
+			this.inquirer.logger.fatal(
+				this.title,
 				`Type of parameter '${option.id}' must be '${option.type.name}'`
 			);
 		return parameter;
 	}
 
 	/**
-	 * Add new option with value
+	 * Add new option with a value
 	 * @since 0.0.1
 	 * @param {*} id Option identifier
-	 * @param {*} value The parameter
+	 * @param {*} value The option's value
 	 */
 	_addOption(id, value) {
 		if (this[id]) this.controller.fatal("option_already_exists", id);

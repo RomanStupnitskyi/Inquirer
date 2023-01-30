@@ -10,7 +10,7 @@ export class BaseLanguage extends BaseModule {
 	#keys;
 	#localKeys;
 
-	constructor(inquirer, user, parameters) {
+	constructor(inquirer, parameters = {}) {
 		super(
 			inquirer,
 			{
@@ -29,7 +29,6 @@ export class BaseLanguage extends BaseModule {
 			},
 			parameters
 		);
-		this.user = user;
 		this.#localKeys = new Collection();
 		this.#keys = new Collection();
 	}
@@ -38,7 +37,7 @@ export class BaseLanguage extends BaseModule {
 	 * Initialize the language component
 	 * @since 0.0.1
 	 */
-	initialize() {
+	prepare() {
 		try {
 			// Load lccal keys
 			if (!this.localKeys) return this.controller.emit("local_keys_error");

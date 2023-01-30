@@ -6,10 +6,11 @@ import { BaseModule } from "../../../utils/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseHear extends BaseModule {
-	constructor(inquirer, parameters = {}) {
+	constructor(inquirer, depends, parameters = {}) {
 		super(
 			inquirer,
 			{
+				depends,
 				config: {
 					dependent: true,
 					useExecutor: true,
@@ -48,7 +49,7 @@ export class BaseHear extends BaseModule {
 	 * @since 0.0.1
 	 * @returns Current hear class
 	 */
-	initialize() {
+	prepare() {
 		if (!this.inquirer.constants.telegrafHears) return this;
 		const _execute = async function (ctx) {
 			const hear = this.inquirer.listeners.get(this.name);
@@ -58,12 +59,10 @@ export class BaseHear extends BaseModule {
 				await this["execute"](ctx);
 			else return false;
 		};
-		for (const text of this.targets) {
-			this.inquirer["hears"](
-				text,
-				this.stable ? this["execute"] : _execute.bind(this)
-			);
-		}
+		this.inquirer["hears"](
+			this.targets,
+			this.stable ? this["execute"] : _execute.bind(this)
+		);
 		return this;
 	}
 }

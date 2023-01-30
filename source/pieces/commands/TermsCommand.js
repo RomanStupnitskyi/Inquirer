@@ -6,12 +6,16 @@ import { BaseCommand } from "../../../libraries/pieces/base/BaseCommand.js";
  * @extends Command
  */
 export default class TermsCommand extends BaseCommand {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "terms",
-			description: "Start command to chat with bot",
-			stable: true,
-		});
+	constructor(inquirer, user) {
+		super(
+			inquirer,
+			{ user },
+			{
+				name: "terms",
+				description: "Start command to chat with bot",
+				stable: true,
+			}
+		);
 	}
 
 	/**

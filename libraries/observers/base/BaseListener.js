@@ -46,7 +46,7 @@ export class BaseListener extends BaseModule {
 	 * @since 0.0.1
 	 * @returns Current listener class
 	 */
-	initialize() {
+	prepare() {
 		const _execute = async function (...args) {
 			const listener = this.inquirer.listeners.get(this.name);
 			if (listener) await this["execute"](...args);

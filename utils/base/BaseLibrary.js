@@ -3,7 +3,7 @@ import { scan, pathExists, mkdirs } from "fs-nextra";
 import { Collection } from "../Collection.js";
 
 /**
- * Base class of libraries
+ * Base library class
  * @since 0.0.1
  */
 export class BaseLibrary {
@@ -13,7 +13,7 @@ export class BaseLibrary {
 	constructor(inquirer, parameters = {}) {
 		this.inquirer = inquirer;
 		this.#parameters = parameters;
-		this.#default = this.inquirer.constants.libraryDefault;
+		this.#default = this.inquirer.constants.library;
 		this.title = `${this.baseName}:${this.name}`;
 
 		this.collections = [];
@@ -63,7 +63,7 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * Load the library accidences
+	 * Load the library modules
 	 * @since 0.0.1
 	 */
 	async loadLibrary() {
@@ -72,35 +72,32 @@ export class BaseLibrary {
 			for (const directory of directories) {
 				const libraryFiles = await this._getLibraryFiles(directory.path);
 				for (const filePath of libraryFiles) {
-					const accidence = await this._importAccidenceFile(
-						directory,
-						filePath
-					);
-					this._setAccidence(accidence);
+					const module = await this._importModuleFile(directory, filePath);
+					this._addModule(module);
 				}
 			}
 			this.collections.sort((a, b) => (a > b ? -1 : 1));
 		} catch (error) {
 			this.inquirer.logger.fatal(
 				this.title,
-				`An error occurred while loaded accidences: ${error}`
+				`An error occurred while loaded modules: ${error}`
 			);
 		}
 	}
 
 	/**
-	 * Initialize the library accidences
+	 * Initialize the library modules
 	 * @since 0.0.1
-	 * @returns Accidences size
+	 * @returns Modules size
 	 */
 	async initializeLibrary() {
 		let size = 0;
 		try {
-			if (this._prepareAccidences) await this._prepareAccidences();
+			if (this._prepareModules) await this._prepareModules();
 			for (const collectionName of this.collections) {
 				const collection = this[collectionName];
-				collection.forEach(async (accidence) =>
-					accidence.initialize ? await accidence.initialize() : null
+				collection.forEach(async (module) =>
+					module.initialize ? module.initialize() : null
 				);
 				size += collection.size;
 			}
@@ -108,7 +105,7 @@ export class BaseLibrary {
 		} catch (error) {
 			this.inquirer.logger.fatal(
 				this.title,
-				`Initialize accidence error:\n${error}`
+				`Initialize module error:\n${error}`
 			);
 			return size;
 		}
@@ -157,69 +154,70 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * Import the accidence from file
+	 * Import the module from file
 	 * @since 0.0.1
 	 * @param {*} directory Directory of file
 	 * @param {*} filePath Path of file
-	 * @returns Imported library accidence or undefined if error
+	 * @returns Imported library module or undefined if error
 	 */
-	async _importAccidenceFile(directory, filePath) {
+	async _importModuleFile(directory, filePath) {
 		try {
-			const Accidence = await import(join("file:///", filePath));
-			if (!BaseLibrary._isClass(Accidence.default)) {
+			const Module = await import(join("file:///", filePath));
+			if (!BaseLibrary._isClass(Module.default)) {
 				this.inquirer.logger.fatal(
 					this.title,
 					`Class is not exported or exported without default`
 				);
 			}
 
-			const accidence = new Accidence.default(this.inquirer);
-			if (!accidence.name)
+			Module.default.prototype.library = this;
+			Module.default.prototype.baseName = directory.baseName;
+
+			const module = new Module.default(this.inquirer);
+			if (!module.name)
 				return this.inquirer.logger.fatal(
 					this.title,
 					"Accidence is no instanceof by base class"
 				);
 
-			accidence.library = this;
-			accidence.baseName = directory.baseName;
-
-			const base = this.modules[accidence.baseName];
+			const base = this.modules[module.baseName];
 			if (!BaseLibrary._isClass(base)) {
 				this.inquirer.logger.fatal(
 					this.title,
 					`Base class is not a class. Please check the option 'multiBase'`
 				);
 			}
-			if (!(accidence instanceof base)) {
+			if (!(module instanceof base)) {
 				this.inquirer.logger.fatal(
 					this.title,
-					`Accidence is no instanceof by base class`
+					`Module is no instanceof by base class`
 				);
 			}
-			return accidence;
+			return module.dependent ? Module.default : module;
 		} catch (error) {
 			this.inquirer.logger.fatal(
-				`${filePath}:\nAccidence doesn't imported: ${error}`
+				this.title,
+				`${filePath}:\nModule doesn't imported: ${error}`
 			);
 			return undefined;
 		}
 	}
 
 	/**
-	 * Set accidence to collection
+	 * Add module to collection
 	 * @since 0.0.1
-	 * @param {*} accidence The accidence to set
+	 * @param {*} module The motule to add
 	 * @returns Boolean value
 	 */
-	_setAccidence(accidence) {
+	_addModule(module) {
 		try {
-			let collection = this[accidence.baseName];
-			collection.set(accidence.name, accidence);
+			let collection = this[module.baseName || module.prototype.baseName];
+			collection.set(module.name, module);
 			return true;
 		} catch (error) {
 			this.inquirer.logger.fatal(
 				this.title,
-				`Collection '${accidence.baseName}' is not found: ${error}`
+				`Collection '${module.baseName}' is not found: ${error}`
 			);
 			return false;
 		}

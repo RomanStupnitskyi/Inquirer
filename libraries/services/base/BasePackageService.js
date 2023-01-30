@@ -17,6 +17,7 @@ export class BasePackageService extends BaseModule {
 				options: [
 					{
 						id: "name",
+						type: String,
 						required: true,
 						unique: true,
 					},

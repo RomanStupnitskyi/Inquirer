@@ -1,10 +1,11 @@
 import { BaseModule } from "../../../utils/base/BaseModule.js";
 
 export class BaseKeyboard extends BaseModule {
-	constructor(inquirer, user, parameters) {
+	constructor(inquirer, depends, parameters = {}) {
 		super(
 			inquirer,
 			{
+				depends,
 				config: {
 					dependent: true,
 					useExecutor: false,

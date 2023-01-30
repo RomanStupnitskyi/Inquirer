@@ -8,15 +8,9 @@ import { BaseController } from "../../../utils/base/BaseController.js";
 export default class openaiController extends BaseController {
 	constructor(inquirer) {
 		super(inquirer, {
-			name: "openai",
-			emitters: ["info", "completion_error"],
+			name: "packages",
+			construction: false,
+			emitters: ["info"],
 		});
-	}
-
-	completion_error(...messages) {
-		this.inquirer.logger.error(
-			this.name,
-			`An error occurred while completition requested: ${messages.join(" ")}`
-		);
 	}
 }

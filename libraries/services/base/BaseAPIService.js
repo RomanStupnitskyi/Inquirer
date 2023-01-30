@@ -17,11 +17,13 @@ export class BaseAPIService extends BaseModule {
 				options: [
 					{
 						id: "name",
+						type: String,
 						required: true,
 						unique: true,
 					},
 					{
 						id: "url",
+						type: String,
 						required: true,
 						unique: true,
 					},

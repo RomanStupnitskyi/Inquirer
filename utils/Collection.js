@@ -43,6 +43,30 @@ export class Collection extends Map {
 		return item;
 	}
 
+	hasByValue(options = null) {
+		if (!options) return false;
+		let item;
+
+		const isFunction = options?.constructor?.name;
+		if (isFunction && isFunction === "Function") {
+			for (const [key, value] of this.entries) {
+				const result = options(value);
+				if (result) return true;
+			}
+		}
+		for (const [name, element] of this.entries()) {
+			if (["string", "number"].includes(typeof options)) return value === i;
+			const entries = Object.entries(options);
+			const result = [];
+			for (const [key, value] of entries) {
+				if (element[key] && element[key] === value) result.push(true);
+				else result.push(false);
+			}
+			if (result.reduce((a, b) => a && b)) item = element;
+		}
+		return typeof item === "boolean" ? true : !!item;
+	}
+
 	/**
 	 * Get many parameters of collection
 	 * @param {*} keys Key to get value from collection

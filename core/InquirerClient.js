@@ -7,6 +7,7 @@ import constants from "../utils/constants.js";
 import { ControllersHandler } from "./ControllersHandler.js";
 import { ComponentsLibrary } from "../libraries/components/ComponentsLibrary.js";
 import { ServicesLibrary } from "../libraries/services/ServicesLibrary.js";
+import { ObserversLibrary } from "../libraries/observers/ObserversLibrary.js";
 import { PiecesLibrary } from "../libraries/pieces/PiecesLibrary.js";
 
 /**
@@ -23,6 +24,7 @@ export class InquirerClient extends Telegraf {
 
 		this.controllers = new ControllersHandler(this);
 		this.components = new ComponentsLibrary(this);
+		this.observers = new ObserversLibrary(this);
 		this.pieces = new PiecesLibrary(this);
 		this.services = new ServicesLibrary(this);
 	}
@@ -34,6 +36,7 @@ export class InquirerClient extends Telegraf {
 	async _loadLibraries() {
 		await this.services.loadLibrary();
 		await this.components.loadLibrary();
+		await this.observers.loadLibrary();
 		await this.pieces.loadLibrary();
 	}
 
@@ -45,9 +48,10 @@ export class InquirerClient extends Telegraf {
 	async _initLibraries() {
 		const services = await this.services.initializeLibrary();
 		const components = await this.components.initializeLibrary();
+		const observers = await this.observers.initializeLibrary();
 		const pieces = await this.pieces.initializeLibrary();
 
-		return { services, components, pieces };
+		return { services, components, observers, pieces };
 	}
 
 	/**

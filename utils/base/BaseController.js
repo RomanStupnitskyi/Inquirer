@@ -8,19 +8,14 @@ import EventEmitter from "node:events";
 export class BaseController extends EventEmitter {
 	#default;
 	#parameters;
-	#piece;
-	/**
-	 * @since 0.0.1
-	 * @param {*} inquirer Telegram bot client 'Inquirer'
-	 * @param {*} parameters Controller parameters
-	 * @param {*} options EventEmitter options
-	 */
-	constructor(inquirer, parameters = {}, piece, options = {}) {
+	#module;
+
+	constructor(inquirer, parameters = {}, module, options = {}) {
 		super(options);
 		this.inquirer = inquirer;
-		this.#default = inquirer.constants.controllerDefault;
+		this.#default = inquirer.constants.controllers;
 		this.#parameters = parameters;
-		this.#piece = piece ? piece : undefined;
+		this.#module = module ? module : undefined;
 
 		this.initialize();
 	}
@@ -33,16 +28,12 @@ export class BaseController extends EventEmitter {
 		return this.#parameters.name || this.#default.name;
 	}
 
-	get baseName() {
-		return "controllers";
-	}
-
 	/**
 	 * Controller title
 	 * @since 0.0.1
 	 */
 	get title() {
-		return this.#piece ? `${this.name}:${this.#piece.name}` : this.name;
+		return this.#module ? `${this.name}:${this.#module.name}` : this.name;
 	}
 
 	/**
@@ -50,7 +41,12 @@ export class BaseController extends EventEmitter {
 	 * @since 0.0.1
 	 */
 	get target() {
-		return this.#parameters.target || this.#default.target;
+		if (!this.#parameters.target)
+			this.inquirer.logger.fatal(
+				this.title,
+				"Controller must be have the target"
+			);
+		return this.#parameters.target;
 	}
 
 	/**
@@ -96,7 +92,7 @@ export class BaseController extends EventEmitter {
 	}
 
 	/**
-	 * Log error while loading pieces
+	 * Log error while loading modules
 	 * @since 0.0.1
 	 * @param  {...any} message Some error text
 	 * @returns null
@@ -109,7 +105,7 @@ export class BaseController extends EventEmitter {
 	}
 
 	/**
-	 * Log error while initializing piece
+	 * Log error while initializing module
 	 * @since 0.0.1
 	 * @param  {...any} message Error message to log
 	 * @returns null
@@ -122,7 +118,7 @@ export class BaseController extends EventEmitter {
 	}
 
 	/**
-	 * Log the error while piece exeuting
+	 * Log the error while module exeuting
 	 * @since 0.0.1
 	 * @param  {...any} messages Error message to log
 	 * @returns null
@@ -130,7 +126,7 @@ export class BaseController extends EventEmitter {
 	run_error(...message) {
 		this.inquirer.logger.error(
 			this.title,
-			`An error occurred while piece called: ${message.join(" ")}`
+			`An error occurred while module called: ${message.join(" ")}`
 		);
 	}
 }

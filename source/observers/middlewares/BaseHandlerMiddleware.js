@@ -1,4 +1,4 @@
-import { BaseMiddleware } from "../../../libraries/pieces/base/BaseMiddleware.js";
+import { BaseMiddleware } from "../../../libraries/observers/base/BaseMiddleware.js";
 import { Collection } from "../../../utils/Collection.js";
 
 /**
@@ -23,6 +23,10 @@ export default class BaseHandlerMiddleware extends BaseMiddleware {
 	async run(ctx, next) {
 		const user = ctx.message?.from || ctx.callbackQuery.from;
 		if (!user) return;
+
+		if (!ctx.session.wrapper) {
+			// in development
+		}
 
 		ctx.telegram["mysql"] = this.inquirer.mysql;
 		for (const collectionName of this.inquirer.modules.collections) {
