@@ -22,7 +22,7 @@ export default class ModulesController extends BaseController {
 	}
 
 	connected() {
-		this.inquirer.logger.info(this.name, "Database successfully connected");
+		this.inquirer.logger.debug(this.name, "Database successfully connected");
 	}
 
 	connected_error(error) {
@@ -34,7 +34,7 @@ export default class ModulesController extends BaseController {
 	}
 
 	table_init(name) {
-		this.inquirer.logger.info(
+		this.inquirer.logger.debug(
 			this.name,
 			`Succussfully loaded table '${name}'`
 		);

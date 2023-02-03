@@ -13,7 +13,7 @@ export class BaseController extends EventEmitter {
 	constructor(inquirer, parameters = {}, module, options = {}) {
 		super(options);
 		this.inquirer = inquirer;
-		this.#default = inquirer.constants.controllers;
+		this.#default = inquirer.constants.defaultParameters.controllers;
 		this.#parameters = parameters;
 		this.#module = module ? module : undefined;
 
@@ -88,7 +88,7 @@ export class BaseController extends EventEmitter {
 	 * @returns null
 	 */
 	info(...message) {
-		this.inquirer.logger.info(this.title, ...message);
+		this.inquirer.logger.debug(this.title, ...message);
 	}
 
 	/**

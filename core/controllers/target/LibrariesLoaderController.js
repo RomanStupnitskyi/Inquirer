@@ -8,9 +8,9 @@ import { BaseController } from "../../../utils/base/BaseController.js";
 export default class InquirerController extends BaseController {
 	constructor(inquirer) {
 		super(inquirer, {
-			name: "inquirer",
-			target: inquirer,
-			emitters: ["handle_log"],
+			name: "libraries_loader",
+			target: inquirer.librariesLoader,
+			emitters: ["init_error"],
 		});
 	}
 

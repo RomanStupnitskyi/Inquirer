@@ -6,15 +6,15 @@ import { BaseCommand } from "../../../libraries/pieces/base/BaseCommand.js";
  * @extends Command
  */
 export default class StartCommand extends BaseCommand {
-	constructor(inquirer, user) {
+	constructor(inquirer, config) {
 		super(
 			inquirer,
-			{ user },
 			{
 				name: "start",
 				description: "Start command to chat with bot",
 				stable: true,
-			}
+			},
+			config
 		);
 	}
 

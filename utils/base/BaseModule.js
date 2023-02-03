@@ -7,6 +7,11 @@ export class BaseModule {
 	#parameters;
 
 	constructor(inquirer, parameters, values) {
+		if (!parameters.config.production) {
+			this.inquirer = inquirer;
+			this.config = parameters.config;
+			return this;
+		}
 		this.inquirer = inquirer;
 
 		this.#values = values;
@@ -39,9 +44,24 @@ export class BaseModule {
 			? this.execute.bind(this)
 			: undefined;
 
-		// Auto-Initialization if module is dependent
-		if (this.#parameters.config.dependent && this.#parameters.depends)
-			this.initialize();
+		// Auto-Initialization
+		this._initialize();
+	}
+
+	/**
+	 * The module title
+	 * @since 0.0.1
+	 */
+	get title() {
+		return `${this.library.name}:${this.baseName}`;
+	}
+
+	/**
+	 * Module base name
+	 * @since 0.0.1
+	 */
+	get baseName() {
+		return this.default.baseName;
 	}
 
 	/**
@@ -79,16 +99,11 @@ export class BaseModule {
 	 * Initialize the module
 	 * @since 0.0.1
 	 */
-	initialize() {
+	_initialize() {
 		try {
-			// Add controller
-			const Controller = this.library.controllers.get(this.baseName);
-			if (Controller) this.controller = new Controller(this.inquirer, this);
-			if (!this.controller)
-				this.inquirer.logger.error(
-					`${this.baseName}:${this.name}`,
-					`Module '${this.name}' doesn't have a controller`
-				);
+			// Load module controller
+			if (!this.Controller) return this.destroy("controller is not exists");
+			this.controller = new this.Controller(this.inquirer, this);
 
 			// Handle required objects
 			if (this.dependent) {
@@ -122,15 +137,13 @@ export class BaseModule {
 	_handleOptionValue(option) {
 		const parameter = this.#values[option.id];
 		if (!option.required && !parameter)
-			return option.default
-				? option.default
-				: this.inquirer.constants[this.baseName][option.id];
+			return option.default ? option.default : this.default[option.id];
 		if (option.required && !parameter)
 			this.inquirer.logger.fatal(
 				this.title,
 				`Module must be have the parameter '${option}'`
 			);
-		const has = this.library[this.baseName].hasByValue({
+		const has = this.library[this.directory.folderBaseName].hasByValue({
 			[option.id]: parameter,
 		});
 		if (option.unique && has)
@@ -163,5 +176,11 @@ export class BaseModule {
 			configurable: false,
 			enumerable: false,
 		});
+	}
+
+	destroy(reason = "Unknown reason") {
+		this.library[this.baseName].delete(this.name);
+		this.inquirer.logger.warn(this.title, `Module destroyed: ${reason}`);
+		delete this;
 	}
 }

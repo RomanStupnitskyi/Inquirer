@@ -6,11 +6,15 @@ import { BaseMiddleware } from "../../../libraries/observers/base/BaseMiddleware
  * @extends Middleware
  */
 export default class CommandsHandlerMiddleware extends BaseMiddleware {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "commandsHandler",
-			stable: true,
-		});
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "commandsHandler",
+				stable: true,
+			},
+			config
+		);
 	}
 
 	/**

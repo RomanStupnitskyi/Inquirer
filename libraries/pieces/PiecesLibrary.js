@@ -1,6 +1,6 @@
 import { BaseLibrary } from "../../utils/base/BaseLibrary.js";
-import { BaseCommand as commands } from "./base/BaseCommand.js";
-import { BaseHear as hears } from "./base/BaseHear.js";
+import { BaseCommand as command } from "./base/BaseCommand.js";
+import { BaseHear as hear } from "./base/BaseHear.js";
 
 /**
  * Library of pieces class
@@ -11,7 +11,7 @@ export class PiecesLibrary extends BaseLibrary {
 	constructor(inquirer) {
 		super(inquirer, {
 			name: "pieces",
-			modules: { commands, hears },
+			modules: { command, hear },
 		});
 	}
 }

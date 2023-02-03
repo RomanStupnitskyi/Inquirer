@@ -1,14 +1,20 @@
 import { BaseLanguage } from "../../../libraries/components/base/BaseLanguage.js";
 
 export default class EnglishLanguage extends BaseLanguage {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "en",
-		});
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "en",
+			},
+			config
+		);
 	}
 
 	get localKeys() {
-		return {};
+		return {
+			name: "name",
+		};
 	}
 
 	get keys() {

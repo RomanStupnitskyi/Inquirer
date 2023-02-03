@@ -3,12 +3,8 @@ import { Logger } from "../utils/logger.js";
 import { MySQL } from "./database/MySQL.js";
 
 import constants from "../utils/constants.js";
-
-import { ControllersHandler } from "./ControllersHandler.js";
-import { ComponentsLibrary } from "../libraries/components/ComponentsLibrary.js";
-import { ServicesLibrary } from "../libraries/services/ServicesLibrary.js";
-import { ObserversLibrary } from "../libraries/observers/ObserversLibrary.js";
-import { PiecesLibrary } from "../libraries/pieces/PiecesLibrary.js";
+import { LibrariesLoader } from "./LibrariesLoader.js";
+import { ControllersHandler } from "./controllers/ControllersHandler.js";
 
 /**
  * Telegram bot client 'Inquirer'
@@ -22,36 +18,8 @@ export class InquirerClient extends Telegraf {
 		this.logger = new Logger();
 		this.mysql = new MySQL(this);
 
+		this.librariesLoader = new LibrariesLoader(this);
 		this.controllers = new ControllersHandler(this);
-		this.components = new ComponentsLibrary(this);
-		this.observers = new ObserversLibrary(this);
-		this.pieces = new PiecesLibrary(this);
-		this.services = new ServicesLibrary(this);
-	}
-
-	/**
-	 * Load all libraries
-	 * @since 0.0.1
-	 */
-	async _loadLibraries() {
-		await this.services.loadLibrary();
-		await this.components.loadLibrary();
-		await this.observers.loadLibrary();
-		await this.pieces.loadLibrary();
-	}
-
-	/**
-	 * Initialize libraries
-	 * @since 0.0.1
-	 * @returns Libraries collections size
-	 */
-	async _initLibraries() {
-		const services = await this.services.initializeLibrary();
-		const components = await this.components.initializeLibrary();
-		const observers = await this.observers.initializeLibrary();
-		const pieces = await this.pieces.initializeLibrary();
-
-		return { services, components, observers, pieces };
 	}
 
 	/**
@@ -63,8 +31,8 @@ export class InquirerClient extends Telegraf {
 		await this.controllers.loadControllers();
 		const controllers = await this.controllers.initializeControllers();
 
-		await this._loadLibraries();
-		const libs = await this._initLibraries();
+		await this.librariesLoader.loadLibraries();
+		const libs = await this.librariesLoader.initializeLibraries();
 		this.controller.emit("handle_log", { controllers, ...libs });
 		await this.mysql.connect();
 		await this.mysql.loadTables();

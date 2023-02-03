@@ -7,11 +7,15 @@ import { Collection } from "../../../utils/Collection.js";
  * @extends Middleware
  */
 export default class BaseHandlerMiddleware extends BaseMiddleware {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "baseHandler",
-			stable: true,
-		});
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "baseHandler",
+				stable: true,
+			},
+			config
+		);
 	}
 
 	/**

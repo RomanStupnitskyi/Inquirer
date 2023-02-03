@@ -1,7 +1,7 @@
 import chalk from "chalk";
 
 export class Logger {
-	get infoConfig() {
+	get debugConfig() {
 		return {
 			prefix: chalk.gray,
 			title: chalk.bgCyan.bold,
@@ -40,7 +40,7 @@ export class Logger {
 	log(options, from, ...messages) {
 		if (!this[options.type])
 			throw new TypeError(
-				'Unresolved type of colors. Please choose something between "info", "error" and "warning".'
+				'Unresolved type of colors. Please choose something between "debug", "error" and "warning".'
 			);
 
 		const { prefix, title, name, message } = options;
@@ -60,8 +60,8 @@ export class Logger {
 		return console.log(`${messageString}`);
 	}
 
-	info(from, ...messages) {
-		const options = Object.assign({ type: "info" }, this.infoConfig);
+	debug(from, ...messages) {
+		const options = Object.assign({ type: "debug" }, this.debugConfig);
 		return this.log(options, from, ...messages);
 	}
 

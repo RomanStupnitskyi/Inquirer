@@ -13,15 +13,14 @@ export class BaseLibrary {
 	constructor(inquirer, parameters = {}) {
 		this.inquirer = inquirer;
 		this.#parameters = parameters;
-		this.#default = this.inquirer.constants.library;
-		this.title = `${this.baseName}:${this.name}`;
+		this.#default = this.inquirer.constants.defaultParameters.library;
 
+		this.cache = new Collection();
 		this.collections = [];
-		this.controllers = new Collection();
 	}
 
 	/**
-	 * String identifier of library
+	 * The library string identifier
 	 * @since 0.0.1
 	 */
 	get name() {
@@ -31,15 +30,23 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * Base name of library
+	 * Then library basename
 	 * @since 0.0.1
 	 */
 	get baseName() {
-		return this.#default.name;
+		return this.#default.baseName;
 	}
 
 	/**
-	 * Library modules
+	 * The library title
+	 * @since 0.0.1
+	 */
+	get title() {
+		return `${this.baseName}:${this.name}`;
+	}
+
+	/**
+	 * The library modules
 	 * @since 0.0.1
 	 */
 	get modules() {
@@ -55,7 +62,7 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * The path to library source folder
+	 * The library path of source folder
 	 * @since 0.0.1
 	 */
 	get path() {
@@ -66,17 +73,16 @@ export class BaseLibrary {
 	 * Load the library modules
 	 * @since 0.0.1
 	 */
-	async loadLibrary() {
+	async loadModules() {
 		try {
-			const directories = await this._loadLibraryCollections();
+			const directories = await this._loadLibraryDirectories();
 			for (const directory of directories) {
 				const libraryFiles = await this._getLibraryFiles(directory.path);
 				for (const filePath of libraryFiles) {
-					const module = await this._importModuleFile(directory, filePath);
-					this._addModule(module);
+					const Module = await this._importModuleFile(directory, filePath);
+					this._addModule(Module);
 				}
 			}
-			this.collections.sort((a, b) => (a > b ? -1 : 1));
 		} catch (error) {
 			this.inquirer.logger.fatal(
 				this.title,
@@ -90,15 +96,20 @@ export class BaseLibrary {
 	 * @since 0.0.1
 	 * @returns Modules size
 	 */
-	async initializeLibrary() {
+	async initializeModules() {
 		let size = 0;
 		try {
 			if (this._prepareModules) await this._prepareModules();
 			for (const collectionName of this.collections) {
 				const collection = this[collectionName];
-				collection.forEach(async (module) =>
-					module.initialize ? module.initialize() : null
-				);
+				collection.forEach((Module) => {
+					if (!Module.prototype.config.dependent) {
+						const module = new Module(this.inquirer, {
+							production: true,
+						});
+						this.cache.set(module.name, module);
+					}
+				});
 				size += collection.size;
 			}
 			return size;
@@ -112,11 +123,11 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * Load the library collections
+	 * Load the library directories
 	 * @since 0.0.1
-	 * @returns Library collections as names
+	 * @returns Library directories as object with keys ["path", "baseName"]
 	 */
-	async _loadLibraryCollections() {
+	async _loadLibraryDirectories() {
 		const folders = (
 			await scan(this.path, {
 				filter: (stat) => stat.isDirectory(),
@@ -125,19 +136,23 @@ export class BaseLibrary {
 
 		const directories = [];
 		for (const folder of folders) {
-			const baseName = basename(folder);
-			this[baseName] = new Collection();
-			this.collections.push(baseName);
-			directories.push({ path: folder, baseName });
+			const folderBaseName = basename(folder);
+			this[folderBaseName] = new Collection();
+			this.collections.push(folderBaseName);
+			directories.push({
+				path: folder,
+				folderBaseName,
+			});
 		}
+		this.collections.sort((a, b) => (a > b ? -1 : 1));
 		return directories;
 	}
 
 	/**
-	 * Get the files paths from path
+	 * Get the library files from the library folder
 	 * @since 0.0.1
-	 * @param {*} path Path to files
-	 * @returns Files paths
+	 * @param {*} path The library folder path
+	 * @returns Modules files paths as array
 	 */
 	async _getLibraryFiles(path) {
 		const folderExists = await pathExists(path);
@@ -154,37 +169,41 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * Import the module from file
+	 * Import the module from file path
 	 * @since 0.0.1
-	 * @param {*} directory Directory of file
-	 * @param {*} filePath Path of file
+	 * @param {*} directory The file directory
+	 * @param {*} filePath The file path
 	 * @returns Imported library module or undefined if error
 	 */
 	async _importModuleFile(directory, filePath) {
 		try {
 			const Module = await import(join("file:///", filePath));
-			if (!BaseLibrary._isClass(Module.default)) {
+			if (!this._isClass(Module.default)) {
 				this.inquirer.logger.fatal(
 					this.title,
 					`Class is not exported or exported without default`
 				);
 			}
+			const module = new Module.default(this.inquirer, {
+				production: false,
+			});
+			const moduleDefault =
+				this.inquirer.constants.defaultParameters[directory.folderBaseName];
+			const moduleBaseName = moduleDefault.baseName;
+			const Controller =
+				this.inquirer.controllers[this.name].get(moduleBaseName);
 
 			Module.default.prototype.library = this;
-			Module.default.prototype.baseName = directory.baseName;
+			Module.default.prototype.config = module.config;
+			Module.default.prototype.directory = directory;
+			Module.default.prototype.default = moduleDefault;
+			Module.default.prototype.Controller = Controller;
 
-			const module = new Module.default(this.inquirer);
-			if (!module.name)
-				return this.inquirer.logger.fatal(
-					this.title,
-					"Accidence is no instanceof by base class"
-				);
-
-			const base = this.modules[module.baseName];
-			if (!BaseLibrary._isClass(base)) {
+			const base = this.modules[moduleBaseName];
+			if (!this._isClass(base)) {
 				this.inquirer.logger.fatal(
 					this.title,
-					`Base class is not a class. Please check the option 'multiBase'`
+					`Base class is not a class.`
 				);
 			}
 			if (!(module instanceof base)) {
@@ -193,7 +212,7 @@ export class BaseLibrary {
 					`Module is no instanceof by base class`
 				);
 			}
-			return module.dependent ? Module.default : module;
+			return Module.default;
 		} catch (error) {
 			this.inquirer.logger.fatal(
 				this.title,
@@ -204,14 +223,14 @@ export class BaseLibrary {
 	}
 
 	/**
-	 * Add module to collection
+	 * Add the module to collection
 	 * @since 0.0.1
-	 * @param {*} module The motule to add
-	 * @returns Boolean value
+	 * @param {*} module The module to add
+	 * @returns Boolean value (true if successfully added else false)
 	 */
 	_addModule(module) {
 		try {
-			let collection = this[module.baseName || module.prototype.baseName];
+			let collection = this[module.prototype.directory.folderBaseName];
 			collection.set(module.name, module);
 			return true;
 		} catch (error) {
@@ -227,9 +246,9 @@ export class BaseLibrary {
 	 * Check value is class
 	 * @since 0.0.1
 	 * @param {*} input Some value
-	 * @returns Boolean
+	 * @returns Boolean value
 	 */
-	static _isClass(input) {
+	_isClass(input) {
 		return (
 			typeof input === "function" &&
 			typeof input.prototype === "object" &&

@@ -5,7 +5,7 @@ export default class CommandsController extends BaseController {
 		super(
 			inquirer,
 			{
-				name: "commands",
+				name: "command",
 				construction: false,
 				emitters: ["log", "run_error"],
 			},

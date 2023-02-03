@@ -1,6 +1,6 @@
 import { BaseLibrary } from "../../utils/base/BaseLibrary.js";
-import { BaseListener as listeners } from "../observers/base/BaseListener.js";
-import { BaseMiddleware as middlewares } from "../observers/base/BaseMiddleware.js";
+import { BaseListener as listener } from "../observers/base/BaseListener.js";
+import { BaseMiddleware as middleware } from "../observers/base/BaseMiddleware.js";
 
 /**
  * Library of observers class
@@ -11,7 +11,7 @@ export class ObserversLibrary extends BaseLibrary {
 	constructor(inquirer) {
 		super(inquirer, {
 			name: "observers",
-			modules: { listeners, middlewares },
+			modules: { listener, middleware },
 		});
 	}
 

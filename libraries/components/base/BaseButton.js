@@ -1,14 +1,14 @@
 import { BaseModule } from "../../../utils/base/BaseModule.js";
 
 export class BaseButton extends BaseModule {
-	constructor(inquirer, depends, parameters = {}) {
+	constructor(inquirer, parameters = {}, config = { production: true }) {
 		super(
 			inquirer,
 			{
-				depends,
 				config: {
 					dependent: true,
 					useExecutor: true,
+					...config,
 				},
 				options: [
 					{

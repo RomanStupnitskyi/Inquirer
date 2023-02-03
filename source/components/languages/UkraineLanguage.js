@@ -1,10 +1,14 @@
 import { BaseLanguage } from "../../../libraries/components/base/BaseLanguage.js";
 
 export default class UkraineLanguage extends BaseLanguage {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "ua",
-		});
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "ua",
+			},
+			config
+		);
 	}
 
 	get localKeys() {

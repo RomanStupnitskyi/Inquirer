@@ -7,16 +7,17 @@ import { BaseModule } from "../../../utils/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseLanguage extends BaseModule {
-	#keys;
-	#localKeys;
+	#keyss;
+	#localKeyss;
 
-	constructor(inquirer, parameters = {}) {
+	constructor(inquirer, parameters = {}, config = { production: true }) {
 		super(
 			inquirer,
 			{
 				config: {
 					dependent: false,
 					useExecutor: false,
+					...config,
 				},
 				options: [
 					{
@@ -29,8 +30,8 @@ export class BaseLanguage extends BaseModule {
 			},
 			parameters
 		);
-		this.#localKeys = new Collection();
-		this.#keys = new Collection();
+		this.#localKeyss = new Collection();
+		this.#keyss = new Collection();
 	}
 
 	/**

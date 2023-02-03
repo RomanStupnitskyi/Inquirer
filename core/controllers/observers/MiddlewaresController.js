@@ -5,7 +5,7 @@ export default class MiddlewaresController extends BaseController {
 		super(
 			inquirer,
 			{
-				name: "middlewares",
+				name: "middleware",
 				construction: false,
 				emitters: ["log", "run_error"],
 			},

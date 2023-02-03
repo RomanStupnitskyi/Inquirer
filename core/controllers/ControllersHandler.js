@@ -1,7 +1,7 @@
-import { Collection } from "../utils/Collection.js";
+import { Collection } from "../../utils/Collection.js";
 import { basename, join } from "node:path";
 import { scan, pathExists, mkdirs } from "fs-nextra";
-import { BaseController } from "../utils/base/BaseController.js";
+import { BaseController } from "../../utils/base/BaseController.js";
 
 /**
  * Class to load and initialize controllers
@@ -65,7 +65,7 @@ export class ControllersHandler {
 				for (const [name, controller] of this[collection].entries()) {
 					if (collection === "target")
 						controller.target.controller = controller;
-					else this.inquirer[collection].controllers.set(name, controller);
+					else continue;
 				}
 				size += this[collection].size;
 			}

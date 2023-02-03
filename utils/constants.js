@@ -33,58 +33,90 @@ export default {
 		useHiddenPieces: true, // Owners can use hidden pieces
 	},
 
-	// Default library parameters
-	library: {
-		name: "library",
-		dependent: false,
-	},
-
-	// Default controller parameters
-	controllers: {
-		name: "controllers",
-		target: null,
-		construction: true,
-	},
-
-	listeners: {
-		name: "listeners",
-		once: false,
-		cooldown: {
-			count: 0,
-			duration: 0,
-		},
-	},
-
-	commands: {
-		name: "commands",
-		cooldown: {
-			count: 0,
-			duration: 0,
-		},
-	},
-
-	// Default module parameters
-	services: {
-		name: "services",
-	},
-
-	// Default button parameters
-	button: {
-		id: "button",
-		useHear: true,
-	},
-
-	// Default keyboard parameters
-	keyboard: {
-		name: "keyboard",
-		resize_keyboard: true,
-		hidden: false,
-	},
-
 	// Default language
 	defaultLanguage: "en",
 
-	// Application paths
+	// Default parameters
+	defaultParameters: {
+		// Default library parameters
+		library: {
+			baseName: "library",
+			dependent: false,
+		},
+
+		// Default controller parameters
+		controllers: {
+			baseName: "controller",
+			target: null,
+			construction: true,
+		},
+
+		// Default listeners parameters
+		listeners: {
+			baseName: "listener",
+			once: false,
+			cooldown: {
+				count: 0,
+				duration: 0,
+			},
+		},
+
+		// Default middlewares parameters
+		middlewares: {
+			baseName: "middleware",
+		},
+
+		// Default commands parameters
+		commands: {
+			baseName: "command",
+			cooldown: {
+				count: 0,
+				duration: 0,
+			},
+		},
+
+		// Default hears parameters
+		hears: {
+			baseName: "hear",
+		},
+
+		// Default buttons parameters
+		buttons: {
+			baseName: "button",
+			useHear: true,
+		},
+
+		// Default keyboards parameters
+		keyboards: {
+			baseName: "keyboard",
+			resize_keyboard: true,
+			hidden: false,
+		},
+
+		// Default keyboards parameters
+		languages: {
+			baseName: "language",
+		},
+
+		// Default api parameters
+		api: {
+			baseName: "api",
+		},
+
+		// Default packages parameters
+		packages: {
+			basename: "packages",
+		},
+	},
+
+	// Core paths
+	corePaths: {
+		root: _str2path("./"),
+		libraries: _str2path("./libraries"),
+		core: _str2path("./core"),
+	},
+
+	// Source paths
 	paths: {
 		root: _str2path("./source/"),
 		services: _str2path("./source/services/"),

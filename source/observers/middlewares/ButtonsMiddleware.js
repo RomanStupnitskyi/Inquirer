@@ -6,10 +6,14 @@ import { BaseMiddleware } from "../../../libraries/observers/base/BaseMiddleware
  * @extends Middleware
  */
 export default class HearsHandlerMiddleware extends BaseMiddleware {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "buttonsHandler",
-		});
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "buttonsHandler",
+			},
+			config
+		);
 	}
 
 	/**

@@ -8,11 +8,15 @@ import { BaseAPIService } from "../../../libraries/services/base/BaseAPIService.
  */
 export default class OpenAIService extends BaseAPIService {
 	#defaultParameters;
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "openai",
-			url: "https://api.openai.com/v1",
-		});
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "openai",
+				url: "https://api.openai.com/v1",
+			},
+			config
+		);
 		this.#defaultParameters = this.inquirer.constants.openAI.defaultOptions;
 	}
 

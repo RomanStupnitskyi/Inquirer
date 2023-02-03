@@ -1,7 +1,7 @@
 import { BaseLibrary } from "../../utils/base/BaseLibrary.js";
-import { BaseButton as buttons } from "./base/BaseButton.js";
-import { BaseKeyboard as keyboards } from "./base/BaseKeyboard.js";
-import { BaseLanguage as languages } from "./base/BaseLanguage.js";
+import { BaseButton as button } from "./base/BaseButton.js";
+import { BaseKeyboard as keyboard } from "./base/BaseKeyboard.js";
+import { BaseLanguage as language } from "./base/BaseLanguage.js";
 
 /**
  * The components class
@@ -11,7 +11,7 @@ export class ComponentsLibrary extends BaseLibrary {
 	constructor(inquirer) {
 		super(inquirer, {
 			name: "components",
-			modules: { buttons, keyboards, languages },
+			modules: { button, keyboard, language },
 		});
 	}
 

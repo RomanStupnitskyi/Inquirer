@@ -6,13 +6,14 @@ import { BaseModule } from "../../../utils/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseMiddleware extends BaseModule {
-	constructor(inquirer, parameters = {}) {
+	constructor(inquirer, parameters = {}, config = { production: true }) {
 		super(
 			inquirer,
 			{
 				config: {
-					dependent: true,
+					dependent: false,
 					useExecutor: true,
+					...config,
 				},
 				options: [
 					{
@@ -39,7 +40,7 @@ export class BaseMiddleware extends BaseModule {
 	 */
 	prepare() {
 		const _execute = async function (...args) {
-			const middleware = this.inquirer.pieces.middlewares.get(this.name);
+			const middleware = this.inquirer.observers.middlewares.get(this.name);
 			if (middleware) await this["execute"](...args);
 			else return false;
 		};

@@ -1,15 +1,19 @@
 import { BaseListener } from "../../../libraries/observers/base/BaseListener.js";
 
 export default class TextListener extends BaseListener {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "text",
-			stable: true,
-			cooldown: {
-				duration: 15000,
-				count: 1,
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "text",
+				stable: true,
+				cooldown: {
+					duration: 15000,
+					count: 1,
+				},
 			},
-		});
+			config
+		);
 	}
 
 	async run(ctx) {

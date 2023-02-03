@@ -6,13 +6,14 @@ import { BaseModule } from "../../../utils/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BasePackageService extends BaseModule {
-	constructor(inquirer, parameters = {}) {
+	constructor(inquirer, parameters = {}, config = { production: true }) {
 		super(
 			inquirer,
 			{
 				config: {
 					dependent: false,
 					useExecutor: false,
+					...config,
 				},
 				options: [
 					{

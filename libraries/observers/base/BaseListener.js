@@ -6,13 +6,14 @@ import { BaseModule } from "../../../utils/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseListener extends BaseModule {
-	constructor(inquirer, parameters = {}) {
+	constructor(inquirer, parameters = {}, config = { production: true }) {
 		super(
 			inquirer,
 			{
 				config: {
-					dependent: true,
+					dependent: false,
 					useExecutor: true,
+					...config,
 				},
 				options: [
 					{
@@ -48,7 +49,7 @@ export class BaseListener extends BaseModule {
 	 */
 	prepare() {
 		const _execute = async function (...args) {
-			const listener = this.inquirer.listeners.get(this.name);
+			const listener = this.inquirer.observers.listeners.get(this.name);
 			if (listener) await this["execute"](...args);
 			else return false;
 		};

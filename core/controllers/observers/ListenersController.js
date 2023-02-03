@@ -5,7 +5,7 @@ export default class ListenersController extends BaseController {
 		super(
 			inquirer,
 			{
-				name: "listeners",
+				name: "listener",
 				construction: false,
 				emitters: ["log", "run_error"],
 			},

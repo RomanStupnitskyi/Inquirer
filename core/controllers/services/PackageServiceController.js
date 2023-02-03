@@ -8,7 +8,7 @@ import { BaseController } from "../../../utils/base/BaseController.js";
 export default class openaiController extends BaseController {
 	constructor(inquirer) {
 		super(inquirer, {
-			name: "packages",
+			name: "packageService",
 			construction: false,
 			emitters: ["info"],
 		});
