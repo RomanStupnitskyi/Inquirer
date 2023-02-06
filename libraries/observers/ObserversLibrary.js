@@ -1,4 +1,4 @@
-import { BaseLibrary } from "../../utils/base/BaseLibrary.js";
+import { BaseLibrary } from "../../core/base/BaseLibrary.js";
 import { BaseListener as listener } from "../observers/base/BaseListener.js";
 import { BaseMiddleware as middleware } from "../observers/base/BaseMiddleware.js";
 

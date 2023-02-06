@@ -1,22 +1,41 @@
-import { BaseController } from "../../../utils/base/BaseController.js";
+import { BaseController } from "../../base/BaseController.js";
 
 export default class LanguageController extends BaseController {
-	constructor(inquirer, module) {
+	constructor(inquirer, config) {
 		super(
 			inquirer,
 			{
 				name: "language",
-				construction: false,
-				emitters: ["init_error", "local_keys_error"],
+				type: "module",
+				emitters: [
+					"init_error",
+					"local_keys_error",
+					"keys_error",
+					"get_local_key_error",
+				],
 			},
-			module
+			config
 		);
 	}
 
 	local_keys_error() {
-		this.inquirer.logger.fatal(
+		return this.inquirer.logger.fatal(
 			this.title,
-			'Getter "LocalKeys" is not declared'
+			'Getter "localKeys" is not declared'
+		);
+	}
+
+	keys_error() {
+		return this.inquirer.logger.fatal(
+			this.title,
+			'Getter "keys" is not declared'
+		);
+	}
+
+	get_local_key_error(key) {
+		return this.inquirer.logger.fatal(
+			this.title,
+			`Key '${key}' is not defined in local keys`
 		);
 	}
 }

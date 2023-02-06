@@ -13,6 +13,7 @@ export default class UserTable extends BaseTable {
 				id: "VARCHAR(10) NOT NULL",
 				temperature: "INT(100) DEFAULT 0",
 				language: "VARCHAR(2) DEFAULT 'en'",
+				api: "VARCHAR(51) DEFAULT NULL",
 			},
 		});
 	}

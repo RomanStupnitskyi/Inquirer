@@ -1,4 +1,4 @@
-import { BaseController } from "../../../utils/base/BaseController.js";
+import { BaseController } from "../../base/BaseController.js";
 
 /**
  * Inquirer controller
@@ -6,11 +6,15 @@ import { BaseController } from "../../../utils/base/BaseController.js";
  * @extends Controller
  */
 export default class openaiController extends BaseController {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "packageService",
-			construction: false,
-			emitters: ["info"],
-		});
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "packageService",
+				type: "module",
+				emitters: ["info"],
+			},
+			config
+		);
 	}
 }

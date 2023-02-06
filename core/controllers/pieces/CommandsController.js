@@ -1,15 +1,15 @@
-import { BaseController } from "../../../utils/base/BaseController.js";
+import { BaseController } from "../../base/BaseController.js";
 
 export default class CommandsController extends BaseController {
-	constructor(inquirer, command) {
+	constructor(inquirer, config) {
 		super(
 			inquirer,
 			{
 				name: "command",
-				construction: false,
+				type: "module",
 				emitters: ["log", "run_error"],
 			},
-			command
+			config
 		);
 	}
 
@@ -23,7 +23,7 @@ export default class CommandsController extends BaseController {
 		const username = ctx.message.from.username
 			? `@${ctx.message.from.username}:`
 			: "";
-		this.inquirer.logger.info(
+		this.inquirer.logger.debug(
 			this.title,
 			`${firstName} ${lastName}(${username}${ctx.message.from.id}): ${ctx.message.text}`
 		);

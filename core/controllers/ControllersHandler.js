@@ -1,88 +1,122 @@
-import { Collection } from "../../utils/Collection.js";
+import { Store } from "../structures/Store.js";
 import { basename, join } from "node:path";
 import { scan, pathExists, mkdirs } from "fs-nextra";
-import { BaseController } from "../../utils/base/BaseController.js";
+import { BaseController } from "../base/BaseController.js";
 
 /**
- * Class to load and initialize controllers
+ * The controllers handler class
  * @since 0.0.1
  */
 export class ControllersHandler {
+	/**
+	 * @param {*} inquirer The inquirer client
+	 */
 	constructor(inquirer) {
 		this.inquirer = inquirer;
-		this.collections = [];
+		this.stores = [];
 	}
 
+	/**
+	 * The class name
+	 * @since 0.0.1
+	 */
+	get name() {
+		return ControllersHandler.name;
+	}
+
+	/**
+	 * Path to controllers
+	 * @since 0.0.1
+	 */
 	get path() {
-		return join(process.cwd(), "./core/controllers");
+		return this.inquirer.constants.paths.controllers;
 	}
 
+	/**
+	 * Load controllers
+	 * @since 0.0.1
+	 */
 	async loadControllers() {
 		try {
-			const folders = (
-				await scan(this.path, {
-					filter: (stat) => stat.isDirectory(),
-				})
-			).keys();
-			for (const folderPath of folders) {
-				const collectionName = basename(folderPath);
-				this[collectionName] = new Collection();
-				this.collections.push(collectionName);
-
-				const files = await this._loadFiles(folderPath);
-				for (const filePath of files) {
-					const Controller = await import(join("file:///", filePath));
-					if (
-						!Controller ||
-						!ControllersHandler._isClass(Controller.default)
-					)
-						return this.inquirer.logger.fatal(
-							"controllers",
-							`Class is not exported or exported without default\n${filePath}`
-						);
-					let controller = new Controller.default(this.inquirer);
-					if (!(controller instanceof BaseController))
-						return this.inquirer.logger.fatal(
-							"controllers",
-							"Controller is no instanceof by base class"
-						);
-					const identifier = controller.name;
-					controller = controller.construction
-						? controller
-						: Controller.default;
-					this[collectionName].set(identifier, controller);
+			const directories = await this._loadControllersDirectories();
+			for (const directory of directories) {
+				const controllersFilesPaths = await this._getControllersFiles(
+					directory.path
+				);
+				for (const controllerFilePath of controllersFilesPaths) {
+					const controller = await this._handleController(
+						directory,
+						controllerFilePath
+					);
+					this._addController(controller);
 				}
 			}
 		} catch (error) {
-			this.inquirer.logger.fatal("controllers", error);
+			this.inquirer.logger.fatal(
+				this.name,
+				`An error occurred while loaded controllers: \n${error}`
+			);
 		}
 	}
 
+	/**
+	 * Initialize controllers
+	 * @returns Controllers size
+	 */
 	async initializeControllers() {
 		let size = 0;
 		try {
-			for (const collection of this.collections) {
-				for (const [name, controller] of this[collection].entries()) {
-					if (collection === "target")
-						controller.target.controller = controller;
-					else continue;
-				}
-				size += this[collection].size;
+			for (const storeName of this.stores) {
+				this[storeName].forEach((Controller) => {
+					if (Controller.prototype._config.type === "target") {
+						const controller = new Controller(this.inquirer);
+						this[storeName].cache.set(controller.name, controller);
+					}
+				});
+				size += this[storeName].size;
 			}
 			return size;
 		} catch (error) {
-			this.inquirer.logger.fatal("controllers", error);
+			this.inquirer.logger.fatal(
+				this.name,
+				`An error occurred while initialized controller:\n${error}`
+			);
 			return size;
 		}
 	}
 
 	/**
-	 * Load files paths from path
+	 * Load controllers directories
 	 * @since 0.0.1
-	 * @param {*} path Some path with files
-	 * @returns Files paths
 	 */
-	async _loadFiles(path) {
+	async _loadControllersDirectories() {
+		const folders = (
+			await scan(this.path, {
+				filter: (stat) => stat.isDirectory(),
+			})
+		).keys();
+
+		const directories = [];
+		for (const folder of folders) {
+			const libraryName = basename(folder);
+			this[libraryName] = new Store();
+			this.stores.push(libraryName);
+			directories.push({
+				path: folder,
+				libraryName,
+			});
+		}
+		this.stores.sort((a, b) => (a > b ? -1 : 1));
+		return directories;
+	}
+
+	/**
+	 * Load controllers paths from directory path
+	 * @since 0.0.1
+	 * @param {*} path Directory path
+	 * @returns Controllers paths
+	 */
+	async _getControllersFiles(path) {
 		const folderExists = await pathExists(path);
 		const folderEnsure = this.inquirer.constants.folderEnsure;
 		if (!folderExists) {
@@ -97,12 +131,68 @@ export class ControllersHandler {
 	}
 
 	/**
+	 * Import and handle controller
+	 * @since 0.0.1
+	 * @param {*} controllerFilePath Path to the controller
+	 * @returns The controller class
+	 */
+	async _handleController(directory, controllerFilePath) {
+		// Import controller by path
+		const Controller = await import(join("file:///", controllerFilePath));
+
+		// Check the controller class
+		if (!Controller || !this._isClass(Controller.default))
+			this.inquirer.logger.fatal(
+				this.name,
+				`Class is not exported or exported without default\n${filePath}`
+			);
+		if (Controller.default.__proto__ !== BaseController)
+			this.inquirer.logger.fatal(
+				this.name,
+				"Controller is no instanceof by base class"
+			);
+
+		// Create controller instance
+		const controller = new Controller.default(this.inquirer, {
+			production: false,
+		});
+
+		Controller.default.prototype.directory = directory;
+		Controller.default.prototype._config = {
+			...controller.config,
+			name: controller.name,
+			type: controller.type,
+		};
+
+		return Controller.default;
+	}
+
+	/**
+	 * Add controller to collection
+	 * @since 0.0.1
+	 * @param {*} controller The controller
+	 * @returns Boolean value (true if successfully added else fatal error)
+	 */
+	_addController(controller) {
+		try {
+			const store = this[controller.prototype.directory.libraryName];
+			store.set(controller.prototype._config.name, controller);
+			return true;
+		} catch (error) {
+			this.inquirer.logger.fatal(
+				this.name,
+				`An error occurred while added controller:\n${error}`
+			);
+		}
+	}
+
+	/**
 	 * Check value is class
 	 * @since 0.0.1
 	 * @param {*} input Some value
 	 * @returns Boolean
 	 */
-	static _isClass(input) {
+	_isClass(input) {
 		return (
 			typeof input === "function" &&
 			typeof input.prototype === "object" &&

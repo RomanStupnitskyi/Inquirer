@@ -9,14 +9,19 @@ import { BaseTable } from "./base/BaseTable.js";
  */
 export class MySQL {
 	#config;
+
+	/**
+	 * @param {*} inquirer The inquirer client
+	 */
 	constructor(inquirer) {
 		this.inquirer = inquirer;
+		this.tables = [];
 		this.#config = this.inquirer.constants.database;
 	}
 
 	/**
 	 * Connect database
-	 * @returns Telegram bot client "Inquirer"
+	 * @since 0.0.1
 	 */
 	async connect() {
 		try {
@@ -28,53 +33,28 @@ export class MySQL {
 				password: this.#config.password,
 			});
 			this.controller.emit("connected");
-			return this.inquirer;
 		} catch (error) {
 			this.controller.emit("connect_error", error);
-			return this.inquirer;
-		}
-	}
-
-	async loadTables() {
-		try {
-			const files = await this._loadFiles(
-				this.inquirer.constants.paths.dbTables
-			);
-			for (const file of files) {
-				const filePath = join("file:///", file);
-				const Table = await import(filePath);
-				if (!MySQL._isClass(Table.default))
-					return this.controller.emit(
-						"load_tables_error",
-						`From file is no exported a class:\n${filePath}`
-					);
-				const table = new Table.default(this.inquirer, this.pool);
-				if (!(table instanceof BaseTable))
-					return this.controller.emit(
-						"load_tables_error",
-						`Table class is no instanceof by base class:\n${filePath}`
-					);
-				table["controller"] = this.controller;
-				await table.init();
-				this[table.name] = table;
-			}
-		} catch (error) {
-			this.controller.emit("load_tables_error", error);
 		}
 	}
 
 	/**
-	 * Check value is class
+	 * Load database tables
 	 * @since 0.0.1
-	 * @param {*} input Some value
-	 * @returns Boolean
 	 */
-	static _isClass(input) {
-		return (
-			typeof input === "function" &&
-			typeof input.prototype === "object" &&
-			input.toString().substring(0, 5) === "class"
-		);
+	async loadTables() {
+		try {
+			const tablesFilesPaths = await this._loadTablesPaths(
+				this.inquirer.constants.paths.dbTables
+			);
+			for (const filePath of tablesFilesPaths) {
+				const table = await this._handleTable(filePath);
+				table["controller"] = this.controller;
+				this.tables.push(table.name);
+			}
+		} catch (error) {
+			this.controller.emit("load_tables_error", error);
+		}
 	}
 
 	/**
@@ -83,7 +63,7 @@ export class MySQL {
 	 * @param {*} path Some path with files
 	 * @returns Files paths
 	 */
-	async _loadFiles(path) {
+	async _loadTablesPaths(path) {
 		const folderExists = await pathExists(path);
 		const folderEnsure = this.inquirer.constants.folderEnsure;
 		if (!folderExists) {
@@ -95,5 +75,36 @@ export class MySQL {
 			filter: (stat) => stat.isFile() && stat.name.endsWith(".js"),
 		});
 		return (await Promise.all([...files])).map((i) => i[0]);
+	}
+
+	async _handleTable(filePath) {
+		const importFilePath = join("file:///", filePath);
+		const Table = await import(importFilePath);
+		if (!this._isClass(Table.default))
+			this.controller.emit(
+				"load_tables_error",
+				`From file is no exported a class:\n${filePath}`
+			);
+		const table = new Table.default(this.inquirer, this.pool);
+		if (!(table instanceof BaseTable))
+			this.controller.emit(
+				"load_tables_error",
+				`Table class is no instanceof by base class:\n${filePath}`
+			);
+		return table;
+	}
+
+	/**
+	 * Check value is class
+	 * @since 0.0.1
+	 * @param {*} input Some value
+	 * @returns Boolean
+	 */
+	_isClass(input) {
+		return (
+			typeof input === "function" &&
+			typeof input.prototype === "object" &&
+			input.toString().substring(0, 5) === "class"
+		);
 	}
 }

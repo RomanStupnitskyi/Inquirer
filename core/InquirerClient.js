@@ -1,8 +1,8 @@
 import { Telegraf } from "telegraf";
-import { Logger } from "../utils/logger.js";
+import { Logger } from "../extensions/logger.js";
 import { MySQL } from "./database/MySQL.js";
 
-import constants from "../utils/constants.js";
+import constants from "../constants.js";
 import { LibrariesLoader } from "./LibrariesLoader.js";
 import { ControllersHandler } from "./controllers/ControllersHandler.js";
 

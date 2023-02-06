@@ -3,24 +3,14 @@
  * @since 0.0.1
  */
 export class BaseModule {
-	#values;
-	#parameters;
-
 	constructor(inquirer, parameters, values) {
-		if (!parameters.config.production) {
-			this.inquirer = inquirer;
-			this.config = parameters.config;
-			return this;
-		}
 		this.inquirer = inquirer;
-
-		this.#values = values;
-		this.#parameters = parameters;
+		this.parameters = parameters;
 
 		// Register and handle options
 		for (const option of parameters.options) {
 			Object.defineProperty(this, option.id, {
-				value: this._handleOptionValue(option),
+				value: this._handleOptionValue(option, values),
 				configurable: false,
 				enumerable: false,
 			});
@@ -37,15 +27,12 @@ export class BaseModule {
 					`Method 'run' of module '${this.name}' must be an AsyncFunction`
 				);
 		}
-		this.run = this.#parameters.config.useExecutor
+		this.run = this.parameters.config.useExecutor
 			? this.run.bind(this)
 			: undefined;
-		this.execute = this.#parameters.config.useExecutor
+		this.execute = this.parameters.config.useExecutor
 			? this.execute.bind(this)
 			: undefined;
-
-		// Auto-Initialization
-		this._initialize();
 	}
 
 	/**
@@ -69,7 +56,7 @@ export class BaseModule {
 	 * @since 0.0.1
 	 */
 	get dependent() {
-		return this.#parameters.config.dependent || false;
+		return this.parameters.config.dependent || false;
 	}
 
 	/**
@@ -77,7 +64,7 @@ export class BaseModule {
 	 * @since 0.0.1
 	 */
 	get useExecutor() {
-		return this.#parameters.config.useExecutor || false;
+		return this.parameters.config.useExecutor || false;
 	}
 
 	/**
@@ -99,15 +86,18 @@ export class BaseModule {
 	 * Initialize the module
 	 * @since 0.0.1
 	 */
-	_initialize() {
+	initialize() {
 		try {
 			// Load module controller
 			if (!this.Controller) return this.destroy("controller is not exists");
-			this.controller = new this.Controller(this.inquirer, this);
+			this.controller = new this.Controller(this.inquirer, {
+				production: true,
+				module: this,
+			});
 
 			// Handle required objects
 			if (this.dependent) {
-				const depends = this.#parameters.config.depends;
+				const depends = this.parameters.config.dependentValues;
 				if (!depends) this.controller.emit("dependent_error");
 				if (!(typeof depends !== "object"))
 					this.controller.emit("dependent_type_error");
@@ -134,8 +124,8 @@ export class BaseModule {
 	 * @param {*} option The option
 	 * @returns value or undefined
 	 */
-	_handleOptionValue(option) {
-		const parameter = this.#values[option.id];
+	_handleOptionValue(option, values) {
+		const parameter = values[option.id];
 		if (!option.required && !parameter)
 			return option.default ? option.default : this.default[option.id];
 		if (option.required && !parameter)
@@ -143,13 +133,13 @@ export class BaseModule {
 				this.title,
 				`Module must be have the parameter '${option}'`
 			);
-		const has = this.library[this.directory.folderBaseName].hasByValue({
+		const has = this.library[this.directory.storeName].hasByValue({
 			[option.id]: parameter,
 		});
 		if (option.unique && has)
 			this.inquirer.logger.fatal(
 				this.title,
-				`In module '${this.name}' value of parameter '${option}' already exists in another module. The value of parameter '${parameter}' must be unique.`
+				`In module '${this.name}' value of parameter '${option.id}' already exists in another module. The value of parameter '${parameter}' must be unique.`
 			);
 		if (option.type && parameter.__proto__.constructor !== option.type)
 			this.inquirer.logger.fatal(

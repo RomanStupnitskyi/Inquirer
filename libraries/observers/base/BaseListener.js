@@ -1,4 +1,4 @@
-import { BaseModule } from "../../../utils/base/BaseModule.js";
+import { BaseModule } from "../../../core/base/BaseModule.js";
 
 /**
  * Base listener class

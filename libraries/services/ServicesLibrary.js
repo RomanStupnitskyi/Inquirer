@@ -1,6 +1,6 @@
+import { BaseLibrary } from "../../core/base/BaseLibrary.js";
 import { BaseAPIService as api } from "./base/BaseAPIService.js";
 import { BasePackageService as packageService } from "./base/BasePackageService.js";
-import { BaseLibrary } from "../../utils/base/BaseLibrary.js";
 
 /**
  * Library of services class

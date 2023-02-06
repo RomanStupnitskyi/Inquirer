@@ -1,15 +1,15 @@
-import { BaseController } from "../../../utils/base/BaseController.js";
+import { BaseController } from "../../base/BaseController.js";
 
 export default class MiddlewaresController extends BaseController {
-	constructor(inquirer, middleware) {
+	constructor(inquirer, config) {
 		super(
 			inquirer,
 			{
 				name: "middleware",
-				construction: false,
+				type: "module",
 				emitters: ["log", "run_error"],
 			},
-			middleware
+			config
 		);
 	}
 

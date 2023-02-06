@@ -1,4 +1,4 @@
-import { BaseModule } from "../../../utils/base/BaseModule.js";
+import { BaseModule } from "../../../core/base/BaseModule.js";
 
 export class BaseButton extends BaseModule {
 	constructor(inquirer, parameters = {}, config = { production: true }) {

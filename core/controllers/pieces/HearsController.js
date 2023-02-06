@@ -1,15 +1,15 @@
-import { BaseController } from "../../../utils/base/BaseController.js";
+import { BaseController } from "../../base/BaseController.js";
 
 export default class HearsController extends BaseController {
-	constructor(inquirer, hear) {
+	constructor(inquirer, config) {
 		super(
 			inquirer,
 			{
 				name: "hear",
-				construction: false,
+				type: "module",
 				emitters: ["log", "run_error"],
 			},
-			hear
+			config
 		);
 	}
 

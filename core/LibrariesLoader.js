@@ -1,5 +1,5 @@
-import { BaseLibrary } from "../utils/base/BaseLibrary.js";
-import { Collection } from "../utils/Collection.js";
+import { BaseLibrary } from "../core/base/BaseLibrary.js";
+import { Collection } from "./structures/Collection.js";
 import { basename, join } from "path";
 import { scan } from "fs-nextra";
 
@@ -23,23 +23,11 @@ export class LibrariesLoader {
 			const libraryFolders = await this._getLibraryFolders(root);
 
 			for (const libraryFolder of libraryFolders) {
-				const libraryFilePath = await this._getLibraryFile(
-					libraryFolder.path
-				);
-				const libraryFile = await import(join("file:///", libraryFilePath));
-				const Library = Object.values(libraryFile).find(
-					(i) => this._isClass(i) && i.__proto__.name === BaseLibrary.name
-				);
-				if (!Library) {
-					this.controller.emit("library_is_undefined", libraryFilePath);
-					continue;
-				}
-
-				const library = new Library(this.inquirer);
-				this.libraries.set(library.name, library);
+				const Library = await this._importLibraryFile(libraryFolder);
+				await this._addLibrary(Library);
 			}
 		} catch (error) {
-			this.controller.emit("load_error");
+			this.controller.emit("load_error", error);
 		}
 	}
 
@@ -96,6 +84,23 @@ export class LibrariesLoader {
 			})
 		).keys();
 		return [...files][0];
+	}
+
+	async _importLibraryFile(libraryFolder) {
+		const libraryFilePath = await this._getLibraryFile(libraryFolder.path);
+		const libraryFile = await import(join("file:///", libraryFilePath));
+		const Library = Object.values(libraryFile).find(
+			(i) => this._isClass(i) && i.__proto__.name === BaseLibrary.name
+		);
+		if (!Library)
+			this.controller.emit("library_is_undefined", libraryFilePath);
+		return Library;
+	}
+
+	async _addLibrary(Library) {
+		const library = new Library(this.inquirer);
+		this.libraries.set(library.name, library);
+		return library;
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import { BaseLibrary } from "../../utils/base/BaseLibrary.js";
+import { BaseLibrary } from "../../core/base/BaseLibrary.js";
 import { BaseCommand as command } from "./base/BaseCommand.js";
 import { BaseHear as hear } from "./base/BaseHear.js";
 

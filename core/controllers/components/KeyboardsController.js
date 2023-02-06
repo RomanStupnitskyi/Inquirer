@@ -1,11 +1,15 @@
-import { BaseController } from "../../../utils/base/BaseController.js";
+import { BaseController } from "../../base/BaseController.js";
 
 export default class KeyboardsController extends BaseController {
-	constructor(inquirer) {
-		super(inquirer, {
-			name: "keyboard",
-			construction: false,
-			emitters: ["init_error", "run_error"],
-		});
+	constructor(inquirer, config) {
+		super(
+			inquirer,
+			{
+				name: "keyboard",
+				type: "module",
+				emitters: ["init_error", "run_error"],
+			},
+			config
+		);
 	}
 }

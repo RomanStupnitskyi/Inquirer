@@ -1,4 +1,4 @@
-import { BaseModule } from "../../../utils/base/BaseModule.js";
+import { BaseModule } from "../../../core/base/BaseModule.js";
 
 /**
  * Base command class
@@ -59,7 +59,7 @@ export class BaseCommand extends BaseModule {
 			const isOwner =
 				ctx.user.isOwner && this.inquirer.constants.owners.useHiddenPieces;
 			if (command && (!command.hidden || (command.hidden && isOwner)))
-				await this["execure"](ctx);
+				await this["execute"](ctx);
 			else return false;
 		};
 		this.inquirer["command"](

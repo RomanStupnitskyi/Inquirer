@@ -1,5 +1,5 @@
-import { Collection } from "../../../utils/Collection.js";
-import { BaseModule } from "../../../utils/base/BaseModule.js";
+import { BaseModule } from "../../../core/base/BaseModule.js";
+import { Collection } from "../../../core/structures/Collection.js";
 
 /**
  * Base language class
@@ -7,9 +7,6 @@ import { BaseModule } from "../../../utils/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseLanguage extends BaseModule {
-	#keyss;
-	#localKeyss;
-
 	constructor(inquirer, parameters = {}, config = { production: true }) {
 		super(
 			inquirer,
@@ -30,8 +27,8 @@ export class BaseLanguage extends BaseModule {
 			},
 			parameters
 		);
-		this.#localKeyss = new Collection();
-		this.#keyss = new Collection();
+		this._keys = new Collection();
+		this._localKeys = new Collection();
 	}
 
 	/**
@@ -42,19 +39,19 @@ export class BaseLanguage extends BaseModule {
 		try {
 			// Load lccal keys
 			if (!this.localKeys) return this.controller.emit("local_keys_error");
-			this.#localKeys.setMany(this.localKeys);
+			this._localKeys.setMany(this.localKeys);
 
 			// Load keys
 			if (!this.keys) return this.controller.emit("keys_error");
-			this.#keys.setMany(this.keys);
+			this._keys.setMany(this.keys);
 		} catch (error) {
 			this.controller.emit("init_error", error);
 		}
 	}
 
 	getLocalKey(key = "", ...args) {
-		let replica = this.#localKeys.get(key);
-		if (!replica) return this.controller.emit("get_local_key_error");
+		let replica = this._localKeys.get(key);
+		if (!replica) return this.controller.emit("get_local_key_error", key);
 		if (replica?.constructor?.name === "Function") replica = replica(...args);
 		return replica;
 	}
@@ -67,7 +64,7 @@ export class BaseLanguage extends BaseModule {
 	 * @returns Replica or undefined
 	 */
 	getKey(key = "", ...args) {
-		let replica = this.#keys.get(key);
+		let replica = this._keys.get(key);
 		if (!replica) {
 			if (this.name === this.inquirer.constants.defaultLanguage)
 				return undefined;

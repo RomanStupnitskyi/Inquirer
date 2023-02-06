@@ -7,8 +7,6 @@ export default {
 
 	// OpenAI config
 	openAI: {
-		token: process.env.OPENAI_TOKEN || "",
-		about: "You are telegram bot with name Inquirer.",
 		defaultOptions: {
 			model: "text-davinci-003",
 			prompt: "What is AI?",
@@ -37,7 +35,7 @@ export default {
 	defaultLanguage: "en",
 
 	// Default parameters
-	defaultParameters: {
+	default: {
 		// Default library parameters
 		library: {
 			baseName: "library",
@@ -47,6 +45,7 @@ export default {
 		// Default controller parameters
 		controllers: {
 			baseName: "controller",
+			type: "target",
 			target: null,
 			construction: true,
 		},
@@ -119,11 +118,12 @@ export default {
 	// Source paths
 	paths: {
 		root: _str2path("./source/"),
+		controllers: _str2path("./core/controllers"),
+		dbTables: _str2path("./core/database/tables/"),
 		services: _str2path("./source/services/"),
 		components: _str2path("./source/components/"),
 		observers: _str2path("./source/observers/"),
 		pieces: _str2path("./source/pieces/"),
-		dbTables: _str2path("./core/database/tables/"),
 	},
 
 	// Database config
