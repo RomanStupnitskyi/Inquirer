@@ -3,13 +3,13 @@
  * @extends Map
  */
 export class Collection extends Map {
-	#presave;
-	#set;
 	/**
-	 * @param {*} values Array of arrays with format [key, value]
+	 * @param {*} values Array of arrays like format [key, value]
 	 */
-	constructor(values) {
-		super(Collection._isConvertible(values) ? values : []);
+	constructor(values = {}) {
+		if (typeof values !== "object")
+			throw new Error("Values must be an object");
+		super(values[Symbol.iterator] ? [...values] : Object.entries(values));
 	}
 
 	async getByValue(options = null) {
@@ -18,7 +18,7 @@ export class Collection extends Map {
 
 		const constructor = options?.constructor?.name;
 		if (constructor) {
-			for (const [key, value] of this.entries) {
+			for (const value of this.values) {
 				switch (constructor) {
 					case "Function":
 						if (options(value)) return value;
@@ -30,7 +30,7 @@ export class Collection extends Map {
 				}
 			}
 		}
-		for (const [name, element] of this.entries()) {
+		for (const element of this.values()) {
 			if (typeof options === "string") return options === i;
 			const entries = Object.entries(options);
 			const result = [];
@@ -49,12 +49,12 @@ export class Collection extends Map {
 
 		const isFunction = options?.constructor?.name;
 		if (isFunction && isFunction === "Function") {
-			for (const [key, value] of this.entries) {
+			for (const value of this.values()) {
 				const result = options(value);
 				if (result) return true;
 			}
 		}
-		for (const [name, element] of this.entries()) {
+		for (const element of this.values()) {
 			if (["string", "number"].includes(typeof options)) return value === i;
 			const entries = Object.entries(options);
 			const result = [];
@@ -71,7 +71,7 @@ export class Collection extends Map {
 	 * Get many parameters of collection
 	 * @param {*} keys Key to get value from collection
 	 */
-	getMany(keys) {
+	getMany(keys = []) {
 		const result = [];
 		for (const key of keys) {
 			result.push(this.get(key));
@@ -85,8 +85,11 @@ export class Collection extends Map {
 	 * @returns The collection with new parameters
 	 */
 	setMany(values = {}) {
-		if (!Collection._isConvertible(values)) throw new TypeError();
-		values = Object.entries(values);
+		if (typeof values !== "object")
+			throw new Error("Values must be an object");
+		if (values[Symbol.iterator] && !Array.isArray(values))
+			values = [...values];
+		if (!values[Symbol.iterator]) values = Object.entries(values);
 
 		for (let [key, value] of values) {
 			this.set(key, value);
@@ -113,24 +116,9 @@ export class Collection extends Map {
 	 */
 	filter(callback) {
 		const entries = this.entries();
-		const collection = new Collection();
+		const collection = new this[Symbol.species]();
 		for (let [key, value] of entries) {
 			if (callback(value)) collection.set(key, value);
-			else continue;
-		}
-		return collection;
-	}
-
-	/**
-	 * Async filter of parameters of collection
-	 * @param {*} callback AsyncFunction that returns Boolean value
-	 * @returns New Collection with filtered parameters
-	 */
-	async asyncFilter(callback) {
-		const entries = this.entries();
-		const collection = new Collection();
-		for (let [key, value] of entries) {
-			if (await callback(value)) collection.set(key, value);
 			else continue;
 		}
 		return collection;
@@ -143,23 +131,9 @@ export class Collection extends Map {
 	 */
 	map(callback) {
 		const entries = this.entries();
-		const collection = new Collection();
+		const collection = new this[Symbol.species]();
 		for (let [key, value] of entries) {
 			collection.set(key, callback(value));
-		}
-		return collection;
-	}
-
-	/**
-	 * Async map that mapping parameters of collection
-	 * @param {*} callback AsyncFunction that returns Boolean value
-	 * @returns New Collection with mapping parameters
-	 */
-	async asyncMap(callback) {
-		const entries = this.entries();
-		const collection = new Collection();
-		for (let [key, value] of entries) {
-			collection.set(key, await callback(value));
 		}
 		return collection;
 	}
@@ -173,11 +147,14 @@ export class Collection extends Map {
 	}
 
 	/**
-	 * Check the values is convertable to add to the collection
-	 * @param {*} values Must be an Array with arrays in format [key, value]
-	 * @returns Boolean value
+	 * Formatting collection to array
+	 * @returns Array in format [[key, value], ...]
 	 */
-	static _isConvertible(values) {
-		return typeof values === "object" && !values[Symbol.iterator];
+	toArray() {
+		return Array.from(this);
+	}
+
+	static get [Symbol.species]() {
+		return Collection;
 	}
 }

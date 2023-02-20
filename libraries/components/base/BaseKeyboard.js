@@ -1,44 +1,39 @@
-import { BaseModule } from "../../../core/base/BaseModule.js";
+import { BaseModule } from "../../../core/structures/BaseModule.js";
 
+/**
+ * Base keyboard class
+ * @since 0.0.1
+ * @extends BaseModule
+ */
 export class BaseKeyboard extends BaseModule {
-	constructor(inquirer, parameters = {}, config = { production: true }) {
-		super(
-			inquirer,
-			{
-				config: {
-					dependent: true,
-					useExecutor: false,
-					...config,
+	constructor(inquirer, optionsArguments, properties = {}) {
+		super(inquirer, {
+			useExecutor: false,
+			options: [
+				{
+					id: "buttons",
+					type: Array,
+					default: [],
 				},
-				options: [
-					{
-						id: "name",
-						type: String,
-						required: true,
-						unique: true,
-					},
-					{
-						id: "buttons",
-						type: Array,
-						default: [],
-					},
-					{
-						id: "resize_keyboard",
-						type: Boolean,
-						default: true,
-					},
-					{
-						id: "hidden",
-						type: Boolean,
-						default: false,
-					},
-				],
-			},
-			parameters
-		);
-		this.user = user;
+				{
+					id: "resize_keyboard",
+					type: Boolean,
+					default: true,
+				},
+				{
+					id: "hidden",
+					type: Boolean,
+					default: false,
+				},
+			],
+			optionsArguments,
+			...properties,
+		});
 	}
 
+	/**
+	 * Keyboard buttons
+	 */
 	get buttons() {
 		const buttons = [];
 		const back = this.inquirer.components.buttons.get("back");
@@ -64,7 +59,11 @@ export class BaseKeyboard extends BaseModule {
 		return buttons;
 	}
 
-	keyboard() {
+	/**
+	 * Get keyboard reply markup
+	 * @returns Keyboard reply markup
+	 */
+	keyboardReplyMarkup() {
 		return {
 			resize_keyboard: this.resize_keyboard,
 			keyboard: this.buttons,

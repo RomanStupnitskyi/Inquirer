@@ -1,83 +1,74 @@
-import chalk from "chalk";
-
+/**
+ * Logger class
+ * @since 0.0.1
+ */
 export class Logger {
-	get debugConfig() {
-		return {
-			prefix: chalk.gray,
-			title: chalk.bgCyan.bold,
-			name: chalk.cyan,
-			message: chalk.white,
-		};
+	/**
+	 * @param {*} inquirer Inquirer bot client
+	 * @param {*} options Some options for EventEmitter
+	 */
+	constructor(inquirer, parameters = { title: "" }) {
+		this._config = inquirer.constants.logger;
+		this._parameters = parameters;
 	}
 
-	get warnConfig() {
-		return {
-			prefix: chalk.gray,
-			title: chalk.bgHex("#DEC11E").bold,
-			name: chalk.hex("#DEC11E"),
-			message: chalk.white,
-		};
+	get title() {
+		return this._parameters.title ?? "";
 	}
 
-	get errorConfig() {
-		return {
-			prefix: chalk.gray,
-			title: chalk.bgRed,
-			name: chalk.red,
-			message: chalk.red,
-		};
+	/**
+	 * Set logger title
+	 * @param {*} title The title
+	 * @returns The title
+	 */
+	_setTitle(title = "") {
+		this._parameters.title = title;
+		return title;
 	}
 
-	get fatalConfig() {
-		return {
-			prefix: chalk.gray,
-			title: chalk.bgRed,
-			name: chalk.red,
-			message: chalk.red,
-		};
-	}
-
-	log(options, from, ...messages) {
-		if (!this[options.type])
+	_log(logType, ...messages) {
+		if (!this[logType])
 			throw new TypeError(
 				'Unresolved type of colors. Please choose something between "debug", "error" and "warning".'
 			);
 
-		const { prefix, title, name, message } = options;
-		const date = new Date().toLocaleString();
+		const { date, type, title, message } = this._config[logType];
+		const localeDate = new Date().toLocaleString();
 
-		const dateString = prefix(`[${date}]`);
-		const titleString = title(`${options.type.toUpperCase()}`);
-		const nameString = name(`(${from}):`);
-		const prefixText = `${dateString} ${titleString} ${nameString} `;
-		const messageString =
-			prefixText +
+		const dateLog = this._config.showDate ? date(`[${localeDate}]`) : "";
+		const typeLog = this._config.showType
+			? type(`${logType.toUpperCase()}`)
+			: "";
+		const titleLog = title(`(${this.title}): `);
+		const prefixLog = dateLog + " " + typeLog + " " + titleLog;
+
+		const messageLog =
+			prefixLog +
 			messages
-				.map((m) =>
-					message(!m.split ? m : m.split("\n").join(`\n${prefixText}`))
-				)
-				.join(`\n${prefixText}`);
-		return console.log(`${messageString}`);
+				.map((m) => {
+					if (typeof m === "object") m = m.stack ?? m;
+					return message(
+						!m.split ? m : m.split("\n").join(`\n${prefixLog}`)
+					);
+				})
+				.join(`\n${prefixLog}`);
+		return console.log(messageLog);
 	}
 
-	debug(from, ...messages) {
-		const options = Object.assign({ type: "debug" }, this.debugConfig);
-		return this.log(options, from, ...messages);
+	debug(...messages) {
+		return this._log("debug", ...messages);
 	}
 
-	warn(from, ...messages) {
-		const options = Object.assign({ type: "warn" }, this.warnConfig);
-		return this.log(options, from, ...messages);
+	warn(...messages) {
+		return this._log("warn", ...messages);
 	}
 
-	error(from, ...messages) {
-		const options = Object.assign({ type: "error" }, this.errorConfig);
-		return this.log(options, from, ...messages);
+	error(...messages) {
+		return this._log("error", ...messages);
 	}
 
-	fatal(from, ...messages) {
-		const options = Object.assign({ type: "fatal" }, this.fatalConfig);
-		this.log(options, from, ...messages);
+	fatal(...messages) {
+		this._log("fatal", ...messages);
 		return process.exit();
 	}
 }

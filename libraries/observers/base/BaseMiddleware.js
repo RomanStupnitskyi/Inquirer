@@ -1,4 +1,4 @@
-import { BaseModule } from "../../../core/base/BaseModule.js";
+import { BaseModule } from "../../../core/structures/BaseModule.js";
 
 /**
  * Base middleware class
@@ -6,41 +6,20 @@ import { BaseModule } from "../../../core/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseMiddleware extends BaseModule {
-	constructor(inquirer, parameters = {}, config = { production: true }) {
-		super(
-			inquirer,
-			{
-				config: {
-					dependent: false,
-					useExecutor: true,
-					...config,
-				},
-				options: [
-					{
-						id: "name",
-						type: String,
-						required: true,
-						unique: true,
-					},
-					{
-						id: "stable",
-						type: Boolean,
-						default: false,
-					},
-				],
-			},
-			parameters
-		);
+	constructor(inquirer, optionsArguments, properties = {}) {
+		super(inquirer, {
+			useExecutor: true,
+			options: [],
+			optionsArguments,
+			...properties,
+		});
 	}
 
-	/**
-	 * Initialize the middleware
-	 * @since 0.0.1
-	 * @returns Current middleware class
-	 */
-	prepare() {
+	_prepare() {
 		const _execute = async function (...args) {
-			const middleware = this.inquirer.observers.middlewares.get(this.name);
+			const middleware = this.inquirer.observers.middlewares.cache.get(
+				this.name
+			);
 			if (middleware) await this["execute"](...args);
 			else return false;
 		};

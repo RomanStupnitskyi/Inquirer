@@ -1,10 +1,8 @@
 import { Telegraf } from "telegraf";
-import { Logger } from "../extensions/logger.js";
-import { MySQL } from "./database/MySQL.js";
 
+import { MySQL } from "./database/MySQL.js";
 import constants from "../constants.js";
 import { LibrariesLoader } from "./LibrariesLoader.js";
-import { ControllersHandler } from "./controllers/ControllersHandler.js";
 
 /**
  * Telegram bot client 'Inquirer'
@@ -12,42 +10,35 @@ import { ControllersHandler } from "./controllers/ControllersHandler.js";
  * @extends Telegraf
  */
 export class InquirerClient extends Telegraf {
+	/**
+	 * @param {*} token The telegram bot token
+	 */
 	constructor(token = constants.token) {
 		super(token);
 		this.constants = Object.freeze(constants);
-		this.logger = new Logger();
-		this.mysql = new MySQL(this);
 
-		this.librariesLoader = new LibrariesLoader(this);
-		this.controllers = new ControllersHandler(this);
+		this.mysql = new MySQL(this);
+		this._librariesLoader = new LibrariesLoader(this);
 	}
 
 	/**
 	 * Handle all project parts
-	 * @since 0.0.1
-	 * @returns Telegram bot client 'Inquirer'
 	 */
 	async _handle() {
-		await this.controllers.loadControllers();
-		const controllers = await this.controllers.initializeControllers();
+		await this._librariesLoader.loadLibraries();
+		await this._librariesLoader.initializeLibraries();
 
-		await this.librariesLoader.loadLibraries();
-		const libs = await this.librariesLoader.initializeLibraries();
-		this.controller.emit("handle_log", { controllers, ...libs });
 		await this.mysql.connect();
 		await this.mysql.loadTables();
+		await this.mysql.initializeTables();
 		return this;
 	}
 
 	/**
-	 * Start Telegram bot client 'Inquirer'
-	 * @since 0.0.1
-	 * @returns Telegram bot client 'Inquirer'
+	 * Start Inquirer bot client
 	 */
 	async start() {
 		await this._handle();
 		await this.launch();
-
-		return this;
 	}
 }

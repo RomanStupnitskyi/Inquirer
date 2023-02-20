@@ -1,4 +1,4 @@
-import { BaseModule } from "../../../core/base/BaseModule.js";
+import { BaseModule } from "../../../core/structures/BaseModule.js";
 
 /**
  * Base hear class
@@ -6,42 +6,25 @@ import { BaseModule } from "../../../core/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseHear extends BaseModule {
-	constructor(inquirer, parameters = {}, config = { production: true }) {
-		super(
-			inquirer,
-			{
-				config: {
-					dependent: true,
-					useExecutor: true,
-					...config,
+	constructor(inquirer, optionsArguments, properties = {}) {
+		super(inquirer, {
+			useExecutor: true,
+			options: [
+				{
+					id: "targets",
+					type: Array,
+					required: true,
+					unique: true,
 				},
-				options: [
-					{
-						id: "name",
-						type: String,
-						required: true,
-						unique: true,
-					},
-					{
-						id: "targets",
-						type: Array,
-						required: true,
-						unique: true,
-					},
-					{
-						id: "hidden",
-						type: Boolean,
-						default: false,
-					},
-					{
-						id: "stable",
-						type: Boolean,
-						default: false,
-					},
-				],
-			},
-			parameters
-		);
+				{
+					id: "hidden",
+					type: Boolean,
+					default: false,
+				},
+			],
+			optionsArguments,
+			...properties,
+		});
 	}
 
 	/**

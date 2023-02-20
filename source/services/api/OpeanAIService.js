@@ -7,28 +7,27 @@ import { BaseAPIService } from "../../../libraries/services/base/BaseAPIService.
  * @extends BaseAPIService
  */
 export default class OpenAIService extends BaseAPIService {
-	#defaultParameters;
-	constructor(inquirer, config) {
+	constructor(inquirer, properties) {
 		super(
 			inquirer,
 			{
 				name: "openai",
 				url: "https://api.openai.com/v1",
 			},
-			config
+			properties
 		);
-		this.#defaultParameters = this.inquirer.constants.openAI.defaultOptions;
+
+		this._config = this.inquirer.constants.openAI.defaultOptions;
 	}
 
 	/**
 	 * Generate completion to question
-	 * @since 0.0.1
 	 * @param {*} options Some options to castomize completion
 	 * @returns Completion result
 	 */
 	async completion(options = this.defaultOptions) {
 		try {
-			options = Object.assign(this.#defaultParameters, options);
+			options = Object.assign(this._config, options);
 			options[
 				"prompt"
 			] = `${this.inquirer.constants.openAI.about}\nSend me only answer to text: "${options["prompt"]}". If your answer has code, wrap only the code in \`\`\`, else don't wrap the text in \`\`\``;
@@ -44,7 +43,6 @@ export default class OpenAIService extends BaseAPIService {
 				})
 				.body({
 					...options,
-					temperature: 1,
 					max_tokens: 4096 - options.prompt.length,
 				})
 				.send();

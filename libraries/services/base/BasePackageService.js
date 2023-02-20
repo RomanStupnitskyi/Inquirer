@@ -1,4 +1,4 @@
-import { BaseModule } from "../../../core/base/BaseModule.js";
+import { BaseModule } from "../../../core/structures/BaseModule.js";
 
 /**
  * Base package service
@@ -6,25 +6,12 @@ import { BaseModule } from "../../../core/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BasePackageService extends BaseModule {
-	constructor(inquirer, parameters = {}, config = { production: true }) {
-		super(
-			inquirer,
-			{
-				config: {
-					dependent: false,
-					useExecutor: false,
-					...config,
-				},
-				options: [
-					{
-						id: "name",
-						type: String,
-						required: true,
-						unique: true,
-					},
-				],
-			},
-			parameters
-		);
+	constructor(inquirer, optionsArguments, properties = {}) {
+		super(inquirer, {
+			useExecutor: false,
+			options: [],
+			optionsArguments,
+			...properties,
+		});
 	}
 }

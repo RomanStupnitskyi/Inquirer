@@ -26,6 +26,7 @@
 		"chalk": "^5.2.0",
 		"dotenv": "^16.0.3",
 		"fs-nextra": "^0.5.1",
+		"gpt-3-encoder": "^1.1.4",
 		"mysql2": "^2.3.3",
 		"telegraf": "^4.11.2",
 		"uuid": "^9.0.0"

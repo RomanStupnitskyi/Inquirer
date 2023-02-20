@@ -1,6 +1,4 @@
-import { BaseLibrary } from "../../core/base/BaseLibrary.js";
-import { BaseAPIService as api } from "./base/BaseAPIService.js";
-import { BasePackageService as packageService } from "./base/BasePackageService.js";
+import { BaseLibrary } from "../../core/structures/BaseLibrary.js";
 
 /**
  * Library of services class
@@ -8,10 +6,10 @@ import { BasePackageService as packageService } from "./base/BasePackageService.
  * @extends BaseLibrary
  */
 export class ServicesLibrary extends BaseLibrary {
-	constructor(inquirer) {
+	constructor(inquirer, properties = {}) {
 		super(inquirer, {
 			name: "services",
-			modules: { api, packageService },
+			...properties,
 		});
 	}
 }

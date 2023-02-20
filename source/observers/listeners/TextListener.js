@@ -1,14 +1,13 @@
 import { BaseListener } from "../../../libraries/observers/base/BaseListener.js";
 
 export default class TextListener extends BaseListener {
-	constructor(inquirer, config) {
+	constructor(inquirer, properties) {
 		super(
 			inquirer,
 			{
 				name: "text",
-				stable: true,
 			},
-			config
+			properties
 		);
 	}
 

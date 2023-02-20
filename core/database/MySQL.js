@@ -1,7 +1,10 @@
-import { createPool } from "mysql2/promise";
+import { createConnection } from "mysql2/promise";
 import { join } from "node:path";
 import { scan, pathExists, mkdirs } from "fs-nextra";
+
+import { Logger } from "../../extensions/Logger.js";
 import { BaseTable } from "./base/BaseTable.js";
+import { Collection } from "../../extensions/Collection.js";
 
 /**
  * Database class MySQL
@@ -15,51 +18,84 @@ export class MySQL {
 	 */
 	constructor(inquirer) {
 		this.inquirer = inquirer;
-		this.tables = [];
 		this.#config = this.inquirer.constants.database;
+
+		this.tables = new Collection();
+		this._cache = new Collection();
+		this._logger = new Logger(inquirer, { title: "mysql" });
 	}
 
 	/**
 	 * Connect database
-	 * @since 0.0.1
 	 */
 	async connect() {
 		try {
-			this["pool"] = createPool({
+			this._logger.debug("Connecting to database...");
+			this["connection"] = await createConnection({
 				host: this.#config.host,
 				port: this.#config.port,
 				user: this.#config.user,
 				database: this.#config.name,
 				password: this.#config.password,
 			});
-			this.controller.emit("connected");
+			this._logger.debug("Database connect is complete");
 		} catch (error) {
-			this.controller.emit("connect_error", error);
+			this._logger.fatal(
+				"An error occurred while database was connecting",
+				error
+			);
 		}
 	}
 
 	/**
 	 * Load database tables
-	 * @since 0.0.1
 	 */
 	async loadTables() {
 		try {
+			this._logger.debug("Loading tables...");
+
 			const tablesFilesPaths = await this._loadTablesPaths(
 				this.inquirer.constants.paths.dbTables
 			);
 			for (const filePath of tablesFilesPaths) {
-				const table = await this._handleTable(filePath);
-				table["controller"] = this.controller;
-				this.tables.push(table.name);
+				const Table = await this._importTableClass(filePath);
+				this.tables.set(Table.name, Table);
 			}
+
+			this._logger.debug(
+				`Successfully loaded ${this.tables.size} tables\nTables loading is complete`
+			);
 		} catch (error) {
-			this.controller.emit("load_tables_error", error);
+			this._logger.fatal("An error occurred while table loading", error);
+		}
+	}
+
+	/**
+	 * Initialize database tables
+	 */
+	async initializeTables() {
+		try {
+			this._logger.debug("Initializing database tables...");
+
+			for (const Table of this.tables.values()) {
+				const table = new Table(this.inquirer, this.connection);
+				await table.initialize();
+				this._cache.set(table.name, table);
+			}
+
+			this._logger.debug(
+				`Successfully initialized ${this._cache.size} tables\nDatabase tables intitializing is complete`
+			);
+		} catch (error) {
+			this._logger.fatal(
+				"An error occurred while intitializing tables",
+				error
+			);
 		}
 	}
 
 	/**
 	 * Load files paths from path
-	 * @since 0.0.1
 	 * @param {*} path Some path with files
 	 * @returns Files paths
 	 */
@@ -67,7 +103,7 @@ export class MySQL {
 		const folderExists = await pathExists(path);
 		const folderEnsure = this.inquirer.constants.folderEnsure;
 		if (!folderExists) {
-			if (!folderEnsure) throw new Error(`Path cannot exists '${path}'`);
+			if (!folderEnsure) throw new Error(`Path is not exists '${path}'`);
 			await mkdirs(path);
 			return [];
 		}
@@ -77,26 +113,27 @@ export class MySQL {
 		return (await Promise.all([...files])).map((i) => i[0]);
 	}
 
-	async _handleTable(filePath) {
+	/**
+	 * Import table class by path
+	 * @param {*} filePath Path to table
+	 * @returns The table class
+	 */
+	async _importTableClass(filePath) {
 		const importFilePath = join("file:///", filePath);
-		const Table = await import(importFilePath);
-		if (!this._isClass(Table.default))
-			this.controller.emit(
-				"load_tables_error",
-				`From file is no exported a class:\n${filePath}`
+		const tableFile = await import(importFilePath);
+		const Table = Object.values(tableFile).find(
+			(i) => this._isClass(i) && Object.getPrototypeOf(i) === BaseTable
+		);
+
+		if (!Table)
+			this._logger.fatal(
+				`${filePath} Table is not class or is not instance of by base class`
 			);
-		const table = new Table.default(this.inquirer, this.pool);
-		if (!(table instanceof BaseTable))
-			this.controller.emit(
-				"load_tables_error",
-				`Table class is no instanceof by base class:\n${filePath}`
-			);
-		return table;
+		return Table;
 	}
 
 	/**
 	 * Check value is class
-	 * @since 0.0.1
 	 * @param {*} input Some value
 	 * @returns Boolean
 	 */

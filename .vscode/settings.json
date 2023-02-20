@@ -1,6 +1,15 @@
 {
+	"editor.tabSize": 3,
+	"editor.insertSpaces": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.autoClosingBrackets": "always",
+	"editor.autoClosingQuotes": "always",
+	"editor.bracketPairColorization.enabled": true,
 	"workbench.colorCustomizations": {
 		"minimap.background": "#00000000",
 		"scrollbar.shadow": "#00000000"
-	}
+	},
+	"editor.fontFamily": "Fira Code",
+	"editor.fontLigatures": true
 }

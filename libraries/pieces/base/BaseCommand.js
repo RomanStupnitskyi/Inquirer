@@ -1,4 +1,4 @@
-import { BaseModule } from "../../../core/base/BaseModule.js";
+import { BaseModule } from "../../../core/structures/BaseModule.js";
 
 /**
  * Base command class
@@ -6,45 +6,32 @@ import { BaseModule } from "../../../core/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseCommand extends BaseModule {
-	constructor(inquirer, parameters = {}, config = { production: true }) {
-		super(
-			inquirer,
-			{
-				config: {
-					dependent: true,
-					useExecutor: true,
-					...config,
+	constructor(inquirer, optionsArguments, properties = {}) {
+		super(inquirer, {
+			useExecutor: true,
+			options: [
+				{
+					id: "description",
+					type: String,
+					default: "Inquirer command",
 				},
-				options: [
-					{
-						id: "name",
-						type: String,
-						required: true,
-						unique: true,
+				{
+					id: "cooldown",
+					type: Object,
+					default: {
+						count: 0,
+						duration: 0,
 					},
-					{
-						id: "description",
-						type: String,
-						default: "Inquirer command",
-					},
-					{
-						id: "cooldown",
-						type: Object,
-					},
-					{
-						id: "hidden",
-						type: Boolean,
-						default: true,
-					},
-					{
-						id: "stable",
-						type: Boolean,
-						default: false,
-					},
-				],
-			},
-			parameters
-		);
+				},
+				{
+					id: "hidden",
+					type: Boolean,
+					default: true,
+				},
+			],
+			optionsArguments,
+			...properties,
+		});
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import { BaseModule } from "../../../core/base/BaseModule.js";
+import { BaseModule } from "../../../core/structures/BaseModule.js";
 
 /**
  * Base listener class
@@ -6,50 +6,34 @@ import { BaseModule } from "../../../core/base/BaseModule.js";
  * @extends BaseModule
  */
 export class BaseListener extends BaseModule {
-	constructor(inquirer, parameters = {}, config = { production: true }) {
-		super(
-			inquirer,
-			{
-				config: {
-					dependent: false,
-					useExecutor: true,
-					...config,
+	constructor(inquirer, optionsArguments, properties = {}) {
+		super(inquirer, {
+			useExecutor: true,
+			options: [
+				{
+					id: "cooldown",
+					type: Object,
+					default: {
+						count: 0,
+						duration: 0,
+					},
 				},
-				options: [
-					{
-						id: "name",
-						type: String,
-						required: true,
-						unique: true,
-					},
-					{
-						id: "cooldown",
-						type: Object,
-					},
-					{
-						id: "once",
-						type: Boolean,
-						default: false,
-					},
-					{
-						id: "stable",
-						type: Boolean,
-						default: false,
-					},
-				],
-			},
-			parameters
-		);
+				{
+					id: "once",
+					type: Boolean,
+					default: false,
+				},
+			],
+			optionsArguments,
+			...properties,
+		});
 	}
 
-	/**
-	 * Initialize the listener
-	 * @since 0.0.1
-	 * @returns Current listener class
-	 */
-	prepare() {
+	_prepare() {
 		const _execute = async function (...args) {
-			const listener = this.inquirer.observers.listeners.get(this.name);
+			const listener = this.inquirer.observers.listeners.cache.get(
+				this.name
+			);
 			if (listener) await this["execute"](...args);
 			else return false;
 		};

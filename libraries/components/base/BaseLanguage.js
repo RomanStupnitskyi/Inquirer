@@ -1,5 +1,5 @@
-import { BaseModule } from "../../../core/base/BaseModule.js";
-import { Collection } from "../../../core/structures/Collection.js";
+import { BaseModule } from "../../../core/structures/BaseModule.js";
+import { Collection } from "../../../extensions/Collection.js";
 
 /**
  * Base language class
@@ -7,63 +7,57 @@ import { Collection } from "../../../core/structures/Collection.js";
  * @extends BaseModule
  */
 export class BaseLanguage extends BaseModule {
-	constructor(inquirer, parameters = {}, config = { production: true }) {
-		super(
-			inquirer,
-			{
-				config: {
-					dependent: false,
-					useExecutor: false,
-					...config,
-				},
-				options: [
-					{
-						id: "name",
-						type: String,
-						required: true,
-						unique: true,
-					},
-				],
-			},
-			parameters
-		);
+	constructor(inquirer, optionsArguments, properties = {}) {
+		super(inquirer, {
+			useExecutor: false,
+			options: [],
+			optionsArguments,
+			...properties,
+		});
 		this._keys = new Collection();
 		this._localKeys = new Collection();
 	}
 
 	/**
-	 * Initialize the language component
-	 * @since 0.0.1
+	 * Handle language keys
 	 */
-	prepare() {
+	_prepare() {
 		try {
-			// Load lccal keys
-			if (!this.localKeys) return this.controller.emit("local_keys_error");
+			// Handle local keys
+			if (!this.localKeys)
+				return this._logger.fatal("Getter 'localKeys' is not exists");
 			this._localKeys.setMany(this.localKeys);
 
-			// Load keys
-			if (!this.keys) return this.controller.emit("keys_error");
+			// Handle keys
+			if (!this.keys)
+				return this._logger.warn("Getter 'keys' is not exists");
 			this._keys.setMany(this.keys);
 		} catch (error) {
-			this.controller.emit("init_error", error);
+			this._logger.fatal(error);
 		}
 	}
 
-	getLocalKey(key = "", ...args) {
+	/**
+	 * Get a replica by key
+	 * @param {*} key Language key
+	 * @param  {...any} args Arguments for replica
+	 * @returns Replica
+	 */
+	getLocalReplica(key = "", ...args) {
 		let replica = this._localKeys.get(key);
-		if (!replica) return this.controller.emit("get_local_key_error", key);
+		if (!replica)
+			return this._logger.fatal(`Local key '${key}' is not found`);
 		if (replica?.constructor?.name === "Function") replica = replica(...args);
 		return replica;
 	}
 
 	/**
-	 * Get language replic
-	 * @since 0.0.1
-	 * @param {*} key Identifier of replic
-	 * @param  {...any} args Some args to get replic
+	 * Get a replica by key
+	 * @param {*} key Language key
+	 * @param  {...any} args Replica arguments
 	 * @returns Replica or undefined
 	 */
-	getKey(key = "", ...args) {
+	getReplica(key = "", ...args) {
 		let replica = this._keys.get(key);
 		if (!replica) {
 			if (this.name === this.inquirer.constants.defaultLanguage)

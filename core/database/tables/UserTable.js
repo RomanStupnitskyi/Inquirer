@@ -6,8 +6,8 @@ import { BaseTable } from "../base/BaseTable.js";
  * @extends Table
  */
 export default class UserTable extends BaseTable {
-	constructor(inquirer, pool) {
-		super(inquirer, pool, {
+	constructor(inquirer, connection) {
+		super(inquirer, connection, {
 			name: "user",
 			statement: {
 				id: "VARCHAR(10) NOT NULL",
