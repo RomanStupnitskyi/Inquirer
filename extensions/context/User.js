@@ -1,8 +1,10 @@
 /**
- * The user's class by ctx
+ * User class by context
  * @since 0.0.1
  */
 export class User {
+	#context;
+
 	constructor(ctx) {
 		if (
 			!ctx?.message?.from &&
@@ -11,7 +13,7 @@ export class User {
 		)
 			return (this.isValid = false);
 		else this.isValid = true;
-		this.ctx = ctx;
+		this.#context = ctx;
 	}
 
 	/**
@@ -20,9 +22,9 @@ export class User {
 	 */
 	get ctxUser() {
 		return (
-			this.ctx.message?.from ||
-			this.ctx.update?.message?.from ||
-			this.ctx.callbackQuery.from
+			this.#context.message?.from ||
+			this.#context.update?.message?.from ||
+			this.#context.callbackQuery.from
 		);
 	}
 
@@ -76,22 +78,28 @@ export class User {
 		return this.config.language;
 	}
 
+	get isOwner() {
+		return this.inquirer.owners.ids.includes(this.id);
+	}
+
 	/**
 	 * Load the user's config
 	 * @since 0.0.1
 	 */
 	async initialize() {
-		const config = await this.ctx.inquirer.mysql.user.get({ id: this.id });
-		if (config[0]) this.config = config[0];
+		const properties = await this.#context.inquirer.mysql.user.get({
+			id: this.id,
+		});
+		if (properties[0]) this.properties = properties[0];
 		else {
-			const language = this.ctx.inquirer.components.languages.get(
+			const language = this.#context.inquirer.components.languages.get(
 				this.ctxUser.language_code
 			);
-			const config = await this.ctx.inquirer.mysql.user.create({
+			const properties = await this.#context.inquirer.mysql.user.create({
 				id: this.id,
 				language: language ? language.name : "en",
 			});
-			this.config = config[0];
+			this.properties = properties[0];
 		}
 	}
 }

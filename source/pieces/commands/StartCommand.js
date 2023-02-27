@@ -12,14 +12,7 @@ export default class StartCommand extends BaseCommand {
 		);
 	}
 
-	async run(ctx) {
-		const keyboard = ctx.keyboards.get("language");
-		await ctx.reply(ctx.language.getKey("welcome"), {
-			parse_mode: "Markdown",
-		});
-		await ctx.reply(ctx.language.getKey("chooseLanguage"), {
-			parse_mode: "Markdown",
-			reply_markup: keyboard,
-		});
+	async _run() {
+		await this.reply("Hello!");
 	}
 }

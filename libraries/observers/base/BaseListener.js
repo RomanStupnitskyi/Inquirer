@@ -1,4 +1,5 @@
 import { BaseModule } from "../../../core/structures/BaseModule.js";
+import { Context } from "telegraf";
 
 /**
  * Base listener class
@@ -30,18 +31,18 @@ export class BaseListener extends BaseModule {
 	}
 
 	_prepare() {
-		const _execute = async function (...args) {
-			const listener = this.inquirer.observers.listeners.cache.get(
-				this.name
-			);
-			if (listener) await this["execute"](...args);
+		const _execute = async function (ctx, ...args) {
+			if (ctx instanceof Context) ctx.inquirer = this.inquirer;
+			const listenerArguments =
+				ctx instanceof Context ? [ctx, args] : [this, args];
+			const listener = this.inquirer.observers.cache
+				.get(this._properties.manager.name)
+				.cache.get(this.name);
+			if (listener) await listener["execute"](...listenerArguments);
 			else return false;
 		};
 		const type = this.once ? "once" : "on";
-		this.inquirer[type](
-			this.name,
-			this.stable ? this["execute"] : _execute.bind(this)
-		);
+		this.inquirer[type](this.name, _execute.bind(this));
 		return this;
 	}
 }

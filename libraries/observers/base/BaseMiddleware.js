@@ -16,11 +16,12 @@ export class BaseMiddleware extends BaseModule {
 	}
 
 	_prepare() {
-		const _execute = async function (...args) {
-			const middleware = this.inquirer.observers.middlewares.cache.get(
-				this.name
-			);
-			if (middleware) await this["execute"](...args);
+		const _execute = async function (ctx, ...args) {
+			ctx.inquirer = this.inquirer;
+			const middleware = this.inquirer.observers.cache
+				.get(this._properties.manager.name)
+				.cache.get(this.name);
+			if (middleware) await this["execute"](ctx, ...args);
 			else return false;
 		};
 		this.inquirer["use"](_execute.bind(this));

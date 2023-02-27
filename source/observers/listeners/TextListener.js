@@ -11,7 +11,7 @@ export default class TextListener extends BaseListener {
 		);
 	}
 
-	async run(ctx) {
-		await ctx.reply(ctx.message.text);
+	async _run() {
+		await this.reply(this.message.text);
 	}
 }

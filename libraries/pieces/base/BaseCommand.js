@@ -39,20 +39,20 @@ export class BaseCommand extends BaseModule {
 	 * @since 0.0.1
 	 * @returns Current command class
 	 */
-	prepare() {
+	_prepare() {
 		if (!this.inquirer.constants.telegrafCommands) return this;
-		const _execute = async function (ctx) {
-			const command = this.inquirer.listeners.get(this.name);
+		const _execute = async function (ctx, ...args) {
+			ctx.inquirer = this.inquirer;
+			const command = this.inquirer.pieces.cache
+				.get(this._properties.manager.name)
+				.cache.get(this.name);
 			const isOwner =
 				ctx.user.isOwner && this.inquirer.constants.owners.useHiddenPieces;
 			if (command && (!command.hidden || (command.hidden && isOwner)))
-				await this["execute"](ctx);
+				await this["execute"](ctx, ...args);
 			else return false;
 		};
-		this.inquirer["command"](
-			this.name,
-			this.stable ? this["execute"] : _execute.bind(this)
-		);
+		this.inquirer["command"](this.name, _execute.bind(this));
 		return this;
 	}
 }

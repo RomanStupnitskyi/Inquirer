@@ -28,24 +28,24 @@ export class BaseHear extends BaseModule {
 	}
 
 	/**
-	 * Initialize the hear
+	 * Initialize hear
 	 * @since 0.0.1
 	 * @returns Current hear class
 	 */
-	prepare() {
+	_prepare() {
 		if (!this.inquirer.constants.telegrafHears) return this;
-		const _execute = async function (ctx) {
-			const hear = this.inquirer.listeners.get(this.name);
+		const _execute = async function (ctx, ...args) {
+			ctx.inquirer = this.inquirer;
+			const hear = this.inquirer.pieces.cache
+				.get(this._properties.manager.name)
+				.cache.get(this.name);
 			const isOwner =
 				ctx.user.isOwner && this.inquirer.constants.owners.useHiddenPieces;
 			if (hear && (!hear.hidden || (hear.hidden && isOwner)))
-				await this["execute"](ctx);
+				await this["execute"](ctx, ...args);
 			else return false;
 		};
-		this.inquirer["hears"](
-			this.targets,
-			this.stable ? this["execute"] : _execute.bind(this)
-		);
+		this.inquirer["hears"](this.targets, _execute.bind(this));
 		return this;
 	}
 }

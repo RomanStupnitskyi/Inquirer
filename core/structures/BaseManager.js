@@ -20,9 +20,17 @@ export class BaseManager {
 
 		this.name = name;
 		this.module = module;
-		this._properties = properties;
+		Object.defineProperty(this, "_properties", {
+			value: properties,
+			writable: false,
+			enumerable: false,
+		});
 
-		this._logger = new Logger(inquirer, { title: `manager:${this.name}` });
+		Object.defineProperty(this, "_logger", {
+			value: new Logger(inquirer, { title: `manager:${this.name}` }),
+			enumerable: true,
+			configurable: false,
+		});
 		this.modules = new Collection();
 		this.cache = new Collection();
 	}

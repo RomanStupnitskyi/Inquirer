@@ -18,6 +18,8 @@ export default {
 	telegrafCommands: false,
 	// Use Telegraf hears (for example, client.hears(name, callback))
 	telegrafHears: false,
+	// Use Telegraf buttons (for example, client.action(name, callback))
+	telegrafButtons: false,
 	// Default middlewares
 	middlewares: [session()],
 	// Owners config

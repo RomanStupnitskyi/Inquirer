@@ -1,7 +1,7 @@
 import { BaseLibrary } from "./structures/BaseLibrary.js";
 import { Collection } from "../extensions/Collection.js";
 import { Logger } from "../extensions/Logger.js";
-import { basename, join } from "path";
+import { join } from "path";
 import { scan } from "fs-nextra";
 
 /**
@@ -15,6 +15,7 @@ export class LibrariesLoader extends Collection {
 	constructor(inquirer, values = []) {
 		super(values);
 		this.inquirer = inquirer;
+		this.cache = new Collection();
 		this._logger = new Logger(inquirer, { title: "LibrariesLoader" });
 	}
 
@@ -57,7 +58,8 @@ export class LibrariesLoader extends Collection {
 				await library.loadManagers();
 
 				const size = await library.initializeManagers();
-				this.inquirer[name];
+				this.inquirer[library.name] = library;
+				this.cache.set(library.name, library);
 
 				this._logger.debug(
 					`Successfully initialized library '${name}': ${library.size} managers, ${size} modules`

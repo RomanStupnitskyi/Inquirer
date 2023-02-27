@@ -17,11 +17,17 @@ export class BaseLibrary extends Collection {
 	constructor(inquirer, properties = {}, values = []) {
 		super(values);
 		this.inquirer = inquirer;
-		this._properties = properties;
+		Object.defineProperty(this, "_properties", {
+			value: properties,
+			enumerable: false,
+			writable: false,
+		});
 
-		this._cache = new Collection();
-		this._logger = new Logger(inquirer, {
-			title: `library:${this.name}`,
+		this.cache = new Collection();
+		Object.defineProperty(this, "_logger", {
+			value: new Logger(inquirer, { title: `library:${this.name}` }),
+			enumerable: true,
+			configurable: false,
 		});
 	}
 
@@ -69,7 +75,8 @@ export class BaseLibrary extends Collection {
 			this._logger.debug("Initializing managers...");
 
 			let size = 0;
-			for (const [name, Manager] of this.entries()) {
+			const managers = [...this.entries()].sort((a, b) => (a < b ? 1 : -1));
+			for (const [name, Manager] of managers) {
 				this._logger.debug(`Initializing manager '${name}' ...`);
 
 				const manager = new Manager.class(this.inquirer, {
@@ -80,7 +87,7 @@ export class BaseLibrary extends Collection {
 				await manager.loadModules();
 				await manager.initializeModules();
 
-				this._cache.set(manager.name, manager);
+				this.cache.set(manager.name, manager);
 				size += manager.modules.size;
 
 				this._logger.debug(

@@ -7,16 +7,15 @@ export default class BaseHandlerMiddleware extends BaseMiddleware {
 			inquirer,
 			{
 				name: "baseHandler",
-				stable: true,
 			},
 			properties
 		);
 	}
 
-	async run(ctx, next) {
-		ctx.inquirer = this.inquirer;
-		ctx.user = new User(ctx);
-		//await ctx.user.initialize();
+	async _run(next) {
+		this.keyboards = this.inquirer.components.cache.get("keyboards");
+		this.user = new User(this);
+		await this.user.initialize();
 		next();
 	}
 }

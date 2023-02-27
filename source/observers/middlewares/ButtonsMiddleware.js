@@ -11,8 +11,9 @@ export default class HearsHandlerMiddleware extends BaseMiddleware {
 		);
 	}
 
-	async run(ctx, next) {
-		if (!ctx.message || !ctx.message.text) return next();
+	async _run(next) {
+		if (!this.inquirer.constants.telegrafButtons) return next();
+		console.log(!!this.callbackQuery);
 		next();
 	}
 }

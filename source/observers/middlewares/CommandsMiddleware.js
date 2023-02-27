@@ -12,8 +12,18 @@ export default class CommandsHandlerMiddleware extends BaseMiddleware {
 		);
 	}
 
-	async run(ctx, next) {
-		if (!ctx.message || !ctx.message.text) return next();
+	async _run(next) {
+		if (!this.message || !this.message.text) return next();
+
+		let commandName = this.message.text.split(" ").shift();
+		if (!commandName.startsWith("/")) return next();
+		commandName = commandName.replace(/\//, "");
+
+		this.command = this.inquirer.pieces.cache
+			.get("commands")
+			.cache.get(commandName);
+		if (this.command) return await this.command.execute(this);
+
 		next();
 	}
 }

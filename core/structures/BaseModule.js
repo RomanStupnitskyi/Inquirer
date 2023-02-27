@@ -15,17 +15,23 @@ export class BaseModule {
 
 		// Assign module options
 		this._assignModuleOptions(options, optionsArguments);
-		this._logger = new Logger(inquirer, {
-			title: `${properties.manager.name}:${this.name}`,
+		Object.defineProperty(this, "_logger", {
+			value: new Logger(inquirer, {
+				title: `${properties.manager.name}:${this.name}`,
+			}),
+			enumerable: true,
+			configurable: false,
 		});
 
 		// Check module executor
-		if (this.useExecutor) {
+		if (this._properties.useExecutor) {
 			if (!this._run) this._logger.fatal(`Method '_run' is not exists`);
 			if (this._run.constructor.name !== "AsyncFunction")
 				this._logger.fatal(`Method '_run' must be an AsyncFunction`);
 		}
-		this.execute = this.useExecutor ? this.execute.bind(this) : undefined;
+		this.execute = this._properties.useExecutor
+			? this.execute.bind(this)
+			: undefined;
 	}
 
 	/**
@@ -39,7 +45,7 @@ export class BaseModule {
 	 * Module executor
 	 * @param  {...any} args Some args to run module
 	 */
-	async execute(...args) {
+	async execute(moduleThis, ...args) {
 		try {
 			if (this.useExecutor && this.executeLog) {
 				if (!this.log)
@@ -48,7 +54,7 @@ export class BaseModule {
 					);
 				else this.log(...args);
 			}
-			await this._run(...args);
+			await this._run.call(moduleThis, ...args);
 		} catch (error) {
 			this._logger.error("An error occurred while module calling", error);
 		}
@@ -60,7 +66,7 @@ export class BaseModule {
 	initialize() {
 		try {
 			this._logger.debug("Initializing...");
-			if (this._prepare) this._prepare();
+			if (this._prepare) this._prepare(this);
 			this._logger.debug(`Initializing is complete`);
 		} catch (error) {
 			this._logger.error(

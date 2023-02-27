@@ -21,7 +21,7 @@ export class MySQL {
 		this.#config = this.inquirer.constants.database;
 
 		this.tables = new Collection();
-		this._cache = new Collection();
+		this.cache = new Collection();
 		this._logger = new Logger(inquirer, { title: "mysql" });
 	}
 
@@ -80,11 +80,12 @@ export class MySQL {
 			for (const Table of this.tables.values()) {
 				const table = new Table(this.inquirer, this.connection);
 				await table.initialize();
-				this._cache.set(table.name, table);
+				this[table.name] = table;
+				this.cache.set(table.name, table);
 			}
 
 			this._logger.debug(
-				`Successfully initialized ${this._cache.size} tables\nDatabase tables intitializing is complete`
+				`Successfully initialized ${this.cache.size} tables\nDatabase tables intitializing is complete`
 			);
 		} catch (error) {
 			this._logger.fatal(

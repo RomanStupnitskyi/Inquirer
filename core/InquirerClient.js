@@ -18,15 +18,15 @@ export class InquirerClient extends Telegraf {
 		this.constants = Object.freeze(constants);
 
 		this.mysql = new MySQL(this);
-		this._librariesLoader = new LibrariesLoader(this);
+		this.libraries = new LibrariesLoader(this);
 	}
 
 	/**
 	 * Handle all project parts
 	 */
 	async _handle() {
-		await this._librariesLoader.loadLibraries();
-		await this._librariesLoader.initializeLibraries();
+		await this.libraries.loadLibraries();
+		await this.libraries.initializeLibraries();
 
 		await this.mysql.connect();
 		await this.mysql.loadTables();
