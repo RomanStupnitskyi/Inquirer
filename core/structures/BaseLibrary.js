@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join, basename } from "node:path";
 import { scan, pathExists, mkdirs } from "fs-nextra";
 
 import { BaseManager } from "./BaseManager.js";
@@ -10,22 +10,20 @@ import { Logger } from "../../extensions/Logger.js";
  * @since 0.0.1
  */
 export class BaseLibrary extends Collection {
-	/**
-	 * @param {*} inquirer Inquirer bot client
-	 * @param {*} properties Library properties
-	 */
 	constructor(inquirer, properties = {}, values = []) {
 		super(values);
 		this.inquirer = inquirer;
 		Object.defineProperty(this, "_properties", {
 			value: properties,
-			enumerable: false,
 			writable: false,
+			enumerable: false,
+			configurable: false,
 		});
 
 		this.cache = new Collection();
 		Object.defineProperty(this, "_logger", {
 			value: new Logger(inquirer, { title: `library:${this.name}` }),
+			writable: true,
 			enumerable: true,
 			configurable: false,
 		});
@@ -35,15 +33,13 @@ export class BaseLibrary extends Collection {
 	 * The library name
 	 */
 	get name() {
-		if (!this._properties.name)
-			throw new Error("Library must be have the option 'name'");
 		return this._properties.name;
 	}
 
 	/**
-	 * The library config
+	 * The library parameters
 	 */
-	get config() {
+	get _parameters() {
 		return this.inquirer.constants.library;
 	}
 
@@ -54,14 +50,25 @@ export class BaseLibrary extends Collection {
 		try {
 			this._logger.debug("Loading managers...");
 
-			const managersPaths = await this._loadManagersPaths();
-			for (const managerPath of managersPaths) {
-				const Manager = await this._importManager(managerPath);
-				this.set(Manager.name, { class: Manager, path: managerPath });
+			const pathRoot = this._properties.path;
+			const managersDirectories = await this._loadManagersDirectories(
+				pathRoot
+			);
+			for (const managerDirectory of managersDirectories) {
+				const pathToManagerFile = await this._loadPathToManagerFile(
+					managerDirectory
+				);
+
+				const Manager = await this._importManager(pathToManagerFile);
+				const name = basename(managerDirectory);
+				this.cache.set(name, { class: Manager, path: pathToManagerFile });
+
 				this._logger.debug(`Successfully loaded manager '${Manager.name}'`);
 			}
 
-			this._logger.debug(`Managers loading is complete`);
+			this._logger.debug(
+				`Successfully loaded ${this.cache.size} managers\nManagers loading is complete`
+			);
 		} catch (error) {
 			this._logger.fatal("An error occurred while loading managers", error);
 		}
@@ -74,12 +81,18 @@ export class BaseLibrary extends Collection {
 		try {
 			this._logger.debug("Initializing managers...");
 
+			// middlewares will not work without sorting (middlewares must be
+			// initializing before listeners), otherwise the sorting can be deleted
+			const managers = [...this.cache.entries()].sort((a, b) =>
+				a < b ? 1 : -1
+			);
+
 			let size = 0;
-			const managers = [...this.entries()].sort((a, b) => (a < b ? 1 : -1));
 			for (const [name, Manager] of managers) {
 				this._logger.debug(`Initializing manager '${name}' ...`);
 
 				const manager = new Manager.class(this.inquirer, {
+					name,
 					path: Manager.path,
 					library: this,
 				});
@@ -87,14 +100,14 @@ export class BaseLibrary extends Collection {
 				await manager.loadModules();
 				await manager.initializeModules();
 
-				this.cache.set(manager.name, manager);
+				this.set(name, manager);
 				size += manager.modules.size;
 
-				this._logger.debug(
-					`Successfully initialized manager '${manager.name}'`
-				);
+				this._logger.debug(`Successfully initialized manager '${name}'`);
 			}
-			this._logger.debug("Managers initializing is complete");
+			this._logger.debug(
+				`Successfully initialized ${this.size} managers\nManagers initializing is complete`
+			);
 			return size;
 		} catch (error) {
 			this._logger.fatal(
@@ -105,36 +118,52 @@ export class BaseLibrary extends Collection {
 	}
 
 	/**
-	 * Load managers paths
+	 * Get manager by name
+	 * @param {*} name The manager name
+	 * @returns The manager or undefined
+	 */
+	getManager(name) {
+		return this.get(name);
+	}
+
+	/**
+	 * Load managers' directories
 	 * @returns Managers paths Array
 	 */
-	async _loadManagersPaths() {
-		const path = join(this._properties.path, this.config.managerFolderName);
-		const folderExists = await pathExists(path);
-		const folderEnsure = this.inquirer.constants.folderEnsure;
-		if (!folderExists) {
-			if (!folderEnsure) throw new Error(`Path '${path}' is no exists`);
-			await mkdirs(path);
-			return [];
-		}
-
+	async _loadManagersDirectories(path) {
 		const files = await scan(path, {
-			filter: (stat) => stat.isFile() && stat.name.endsWith(".js"),
+			filter: (stat) => stat.isDirectory(),
 		});
-		return (await Promise.all([...files])).map((i) => i[0]);
+		return files.keys();
+	}
+
+	/**
+	 * Load path to the manager file
+	 * @param {*} directory The manager's directory
+	 * @returns Path to the manager file
+	 */
+	async _loadPathToManagerFile(directory) {
+		const files = (
+			await scan(directory, {
+				filter: (state) => state.isFile() && state.name.endsWith(".js"),
+				depthLimit: -1,
+			})
+		).keys();
+		return [...files][0];
 	}
 
 	/**
 	 * Import manager by path
-	 * @param {*} managerPath The manager path
+	 * @param {*} pathToManager Path to manager file
 	 * @returns Manager class
 	 */
-	async _importManager(managerPath) {
-		const ManagerFile = await import(join("file:///", managerPath));
-		const Manager = Object.values(ManagerFile).find(
-			(i) => this._isClass(i) && Object.getPrototypeOf(i) === BaseManager
-		);
-		if (!Manager) throw new Error(`${managerPath}:\nManager is not defined`);
+	async _importManager(pathToManager) {
+		const ManagerFile = await import(join("file:///", pathToManager));
+		const Manager = ManagerFile.default;
+		if (!Manager)
+			this._logger.fatal(
+				`${pathToManager} Manager is not defined or exported without default`
+			);
 		return Manager;
 	}
 

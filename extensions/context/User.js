@@ -5,22 +5,21 @@
 export class User {
 	#context;
 
-	constructor(ctx) {
+	constructor(context) {
 		if (
-			!ctx?.message?.from &&
-			!ctx?.update?.message?.from &&
-			!ctx?.callbackQuery?.from
+			!context?.message?.from &&
+			!context?.update?.message?.from &&
+			!context?.callbackQuery?.from
 		)
-			return (this.isValid = false);
-		else this.isValid = true;
-		this.#context = ctx;
+			return (this.error = { message: "User is not defined" });
+		this.#context = context;
 	}
 
 	/**
 	 * The context user's object
 	 * @since 0.0.1
 	 */
-	get ctxUser() {
+	get contextUser() {
 		return (
 			this.#context.message?.from ||
 			this.#context.update?.message?.from ||
@@ -33,7 +32,7 @@ export class User {
 	 * @since 0.0.1
 	 */
 	get id() {
-		return this.ctxUser.id;
+		return this.contextUser.id;
 	}
 
 	/**
@@ -41,7 +40,7 @@ export class User {
 	 * @since 0.0.1
 	 */
 	get username() {
-		return this.ctxUser.username || undefined;
+		return this.contextUser.username || undefined;
 	}
 
 	/**
@@ -49,7 +48,7 @@ export class User {
 	 * @since 0.0.1
 	 */
 	get name() {
-		return this.ctxUser.first_name || undefined;
+		return this.contextUser.first_name || undefined;
 	}
 
 	/**
@@ -57,7 +56,7 @@ export class User {
 	 * @since 0.0.1
 	 */
 	get surname() {
-		return this.ctxUser.last_name || undefined;
+		return this.contextUser.last_name || undefined;
 	}
 
 	/**
@@ -75,7 +74,9 @@ export class User {
 	 * @since 0.0.1
 	 */
 	get language() {
-		return this.config.language;
+		return this.#context.inquirer.components
+			.getManager("languages")
+			.modules.get(this.properties.language);
 	}
 
 	get isOwner() {
@@ -93,7 +94,7 @@ export class User {
 		if (properties[0]) this.properties = properties[0];
 		else {
 			const language = this.#context.inquirer.components.languages.get(
-				this.ctxUser.language_code
+				this.contextUser.language_code
 			);
 			const properties = await this.#context.inquirer.mysql.user.create({
 				id: this.id,

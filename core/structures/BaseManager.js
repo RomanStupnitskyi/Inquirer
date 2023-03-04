@@ -7,32 +7,46 @@ import { Collection } from "../../extensions/Collection.js";
 /**
  * Base manager class
  * @since 0.0.1
- * @extends Logger
  */
 export class BaseManager {
-	/**
-	 * @param {*} inquirer Inquirer bot client
-	 * @param {*} data The manager's data config
-	 * @param {*} options The EventEmitter's options
-	 */
-	constructor(inquirer, { name, module, ...properties }) {
+	constructor(inquirer, properties = {}) {
 		this.inquirer = inquirer;
 
-		this.name = name;
-		this.module = module;
 		Object.defineProperty(this, "_properties", {
 			value: properties,
 			writable: false,
 			enumerable: false,
+			configurable: false,
 		});
-
 		Object.defineProperty(this, "_logger", {
 			value: new Logger(inquirer, { title: `manager:${this.name}` }),
 			enumerable: true,
 			configurable: false,
 		});
+
 		this.modules = new Collection();
 		this.cache = new Collection();
+	}
+
+	/**
+	 * The manager's name
+	 */
+	get name() {
+		return this._properties.name;
+	}
+
+	/**
+	 * The module base configuration
+	 */
+	get module() {
+		return this._properties.module;
+	}
+
+	/**
+	 * The manager's library
+	 */
+	get library() {
+		return this._properties.library;
 	}
 
 	/**
@@ -43,29 +57,28 @@ export class BaseManager {
 			this._logger.debug("Loading modules...");
 
 			const modulesPathFolder = join(
-				this.inquirer.constants.paths[this._properties.library.name],
+				this.inquirer.constants.paths.source,
+				this.library.name,
 				this.name
 			);
-			const modulesPaths = await this._loadModulePaths(modulesPathFolder);
-			for (const modulePath of modulesPaths) {
-				const ModuleFile = await import(join("file:///", modulePath));
-				const Module = Object.values(ModuleFile).find(
-					(module) =>
-						this._isClass(module) &&
-						Object.getPrototypeOf(module) === this.module.base
-				);
-				if (!Module) {
-					this.warn(
-						`Module is not loaded: Module '${Module.name}' is not a class or is not instance of by base class`
-					);
+			const pathsToModules = await this._loadModulePaths(modulesPathFolder);
+			for (const pathToModule of pathsToModules) {
+				const Module = await this._importModule(pathToModule);
+
+				const name =
+					Module.name === "default"
+						? basename(pathToModule).replace(/\.js/, "")
+						: Module.name;
+				if (this.cache.has(name)) {
+					this._logger.warn(`Module ${name} already exists`);
 					continue;
 				}
-				this.modules.set(Module.name, Module);
+				this.cache.set(name, Module);
 				this._logger.debug(`Module '${Module.name}' successfully loaded`);
 			}
 
 			this._logger.debug(
-				`Loading modules is complete\nSuccessfully loaded ${this.modules.size} modules`
+				`Successfully loaded ${this.cache.size} modules\nLoading modules is complete`
 			);
 		} catch (error) {
 			this._logger.fatal(error);
@@ -84,18 +97,18 @@ export class BaseManager {
 				this._logger.debug("Modules successfully preparing");
 			}
 
-			for (const Module of this.modules.values()) {
+			for (const Module of this.cache.values()) {
 				const module = new Module(this.inquirer, {
 					manager: this,
-					module: this.module,
+					base: this.module,
 				});
 
 				module.initialize();
-				this.cache.set(module.name, module);
+				this.modules.set(module.name, module);
 			}
 
 			this._logger.debug(
-				`Modules initialization is complete\nSuccessfully initialized ${this.cache.size} modules`
+				`Successfully initialized ${this.modules.size} modules\nModules initialization is complete`
 			);
 		} catch (error) {
 			this._logger.fatal(error);
@@ -119,6 +132,26 @@ export class BaseManager {
 			filter: (stat) => stat.isFile() && stat.name.endsWith(".js"),
 		});
 		return (await Promise.all([...files])).map((pathData) => pathData[0]);
+	}
+
+	/**
+	 * Import module
+	 * @param {*} pathToModule Path to module
+	 * @returns The module
+	 */
+	async _importModule(pathToModule) {
+		const ModuleFile = await import(join("file:///", pathToModule));
+		const Module = Object.values(ModuleFile).find(
+			(module) =>
+				this._isClass(module) &&
+				Object.getPrototypeOf(module) === this.module.baseclass
+		);
+		if (!Module) {
+			this._logger.fatal(
+				`${pathToModule} \nModule is not loaded: Module is not a class or is not instance of by base class`
+			);
+		}
+		return Module;
 	}
 
 	/**

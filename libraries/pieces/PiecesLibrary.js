@@ -7,9 +7,6 @@ import { BaseLibrary } from "../../core/structures/BaseLibrary.js";
  */
 export class PiecesLibrary extends BaseLibrary {
 	constructor(inquirer, properties = {}) {
-		super(inquirer, {
-			name: "pieces",
-			...properties,
-		});
+		super(inquirer, properties);
 	}
 }

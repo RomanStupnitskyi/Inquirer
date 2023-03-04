@@ -1,4 +1,4 @@
-import { BaseLanguage } from "../../../libraries/components/base/BaseLanguage.js";
+import { BaseLanguage } from "../../../libraries/components/languages/LanguagesManager.js";
 
 export default class UkraineLanguage extends BaseLanguage {
 	constructor(inquirer, properties) {
@@ -11,11 +11,13 @@ export default class UkraineLanguage extends BaseLanguage {
 		);
 	}
 
-	get localKeys() {
-		return {};
+	get _localKeys() {
+		return {
+			ask_question: "❓ Відправити запит",
+		};
 	}
 
-	get keys() {
+	get _keys() {
 		return {
 			functionalIsDeveloping:
 				"Не спіши козаче, даний функціонал знаходиться в розробці 🤗",

@@ -1,4 +1,4 @@
-import { BaseButton } from "../../../libraries/components/base/BaseButton.js";
+import { BaseButton } from "../../../libraries/components/buttons/ButtonsManager.js";
 
 export default class AskQuestion extends BaseButton {
 	constructor(inquirer, properties) {
@@ -15,7 +15,7 @@ export default class AskQuestion extends BaseButton {
 	}
 
 	async _run(prompt) {
-		if (!prompt) return this.reply("Send your prompt");
+		if (!prompt) return this.replyWithReplica("functionalIsDeveloping");
 		const answer = await this.services.get("openai").completion({
 			prompt,
 			...user.openAIConfig,

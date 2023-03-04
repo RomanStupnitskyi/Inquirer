@@ -1,14 +1,14 @@
 import { BaseLibrary } from "./structures/BaseLibrary.js";
 import { Collection } from "../extensions/Collection.js";
 import { Logger } from "../extensions/Logger.js";
-import { join } from "path";
+import { join, basename } from "path";
 import { scan } from "fs-nextra";
 
 /**
  * Load libraries class
  * @since 0.0.1
  */
-export class LibrariesLoader extends Collection {
+export class LibrariesAutoLoader extends Collection {
 	/**
 	 * @param {*} inquirer Inquirer bot client
 	 */
@@ -16,28 +16,36 @@ export class LibrariesLoader extends Collection {
 		super(values);
 		this.inquirer = inquirer;
 		this.cache = new Collection();
-		this._logger = new Logger(inquirer, { title: "LibrariesLoader" });
+		Object.defineProperty(this, "_logger", {
+			value: new Logger(inquirer, { title: `library:${this.name}` }),
+			writable: true,
+			enumerable: true,
+			configurable: false,
+		});
 	}
 
 	/**
-	 * Import the libraries and save to collection
+	 * Load the project libraries
 	 */
 	async loadLibraries() {
 		try {
 			this._logger.debug("Loading libraries...");
 
-			const root = this.inquirer.constants.corePaths.libraries;
-			const libraryPaths = await this._getLibrariesPaths(root);
+			const librariesRoot = this.inquirer.constants.paths.libraries;
+			const librariesDirectories = await this._getLibrariesDirectories(
+				librariesRoot
+			);
 
-			for (const libraryPath of libraryPaths) {
-				const Library = await this._importLibraryClass(libraryPath);
-				this.set(Library.name, { class: Library, path: libraryPath });
+			for (const pathToLibrary of librariesDirectories) {
+				const Library = await this._importLibraryClass(pathToLibrary);
+				const name = basename(pathToLibrary);
+				this.cache.set(name, { class: Library, path: pathToLibrary });
 
 				this._logger.debug(`Successfully loaded '${Library.name}' library`);
 			}
 
 			this._logger.debug(
-				`Libraries loading is complete\nSuccessfully loaded ${this.size} libraries`
+				`Successfully loaded ${this.cache.size} libraries\nLibraries loading is complete`
 			);
 		} catch (error) {
 			throw error;
@@ -51,22 +59,25 @@ export class LibrariesLoader extends Collection {
 		try {
 			this._logger.debug("Initializing libraries...");
 
-			for (const [name, Library] of this.entries()) {
+			for (const [name, Library] of this.cache.entries()) {
 				const library = new Library.class(this.inquirer, {
+					name,
 					path: Library.path,
 				});
 				await library.loadManagers();
 
 				const size = await library.initializeManagers();
-				this.inquirer[library.name] = library;
-				this.cache.set(library.name, library);
+				this.inquirer[name] = library;
+				this.set(name, library);
 
 				this._logger.debug(
 					`Successfully initialized library '${name}': ${library.size} managers, ${size} modules`
 				);
 			}
 
-			this._logger.debug(`Libraries initializing is complete`);
+			this._logger.debug(
+				`Successfully initialized ${this.size} libraries\nLibraries initializing is complete`
+			);
 		} catch (error) {
 			throw error;
 		}
@@ -75,27 +86,20 @@ export class LibrariesLoader extends Collection {
 	/**
 	 * Get the libraries folders
 	 * @param {*} path The path to libraries
-	 * @returns Array with paths
+	 * @returns Array with libraries paths
 	 */
-	async _getLibrariesPaths(path) {
-		const folders = (
-			await scan(path, {
-				filter: (stat) => stat.isDirectory(),
-				depthLimit: 0,
-			})
-		).keys();
-
-		const paths = [];
-		for (const path of folders) {
-			paths.push(path);
-		}
-		return paths;
+	async _getLibrariesDirectories(path) {
+		const directories = await scan(path, {
+			filter: (stat) => stat.isDirectory(),
+			depthLimit: 0,
+		});
+		return directories.keys();
 	}
 
 	/**
 	 * Get the library main file
 	 * @param {*} path Path to currently library
-	 * @returns The file path
+	 * @returns Paths to libraries
 	 */
 	async _getLibraryFile(path) {
 		const files = (

@@ -13,16 +13,18 @@ import { Collection } from "../../extensions/Collection.js";
 export class MySQL {
 	#config;
 
-	/**
-	 * @param {*} inquirer The inquirer client
-	 */
 	constructor(inquirer) {
 		this.inquirer = inquirer;
 		this.#config = this.inquirer.constants.database;
 
 		this.tables = new Collection();
 		this.cache = new Collection();
-		this._logger = new Logger(inquirer, { title: "mysql" });
+		Object.defineProperty(this, "_logger", {
+			value: new Logger(inquirer, { title: "mysql" }),
+			writable: true,
+			enumerable: true,
+			configurable: false,
+		});
 	}
 
 	/**
@@ -54,7 +56,7 @@ export class MySQL {
 		try {
 			this._logger.debug("Loading tables...");
 
-			const tablesFilesPaths = await this._loadTablesPaths(
+			const tablesFilesPaths = await this._loadPathsToTables(
 				this.inquirer.constants.paths.dbTables
 			);
 			for (const filePath of tablesFilesPaths) {
@@ -96,11 +98,11 @@ export class MySQL {
 	}
 
 	/**
-	 * Load files paths from path
+	 * Load paths to tables
 	 * @param {*} path Some path with files
 	 * @returns Files paths
 	 */
-	async _loadTablesPaths(path) {
+	async _loadPathsToTables(path) {
 		const folderExists = await pathExists(path);
 		const folderEnsure = this.inquirer.constants.folderEnsure;
 		if (!folderExists) {
@@ -111,7 +113,7 @@ export class MySQL {
 		const files = await scan(path, {
 			filter: (stat) => stat.isFile() && stat.name.endsWith(".js"),
 		});
-		return (await Promise.all([...files])).map((i) => i[0]);
+		return files.keys();
 	}
 
 	/**
@@ -123,7 +125,8 @@ export class MySQL {
 		const importFilePath = join("file:///", filePath);
 		const tableFile = await import(importFilePath);
 		const Table = Object.values(tableFile).find(
-			(i) => this._isClass(i) && Object.getPrototypeOf(i) === BaseTable
+			(module) =>
+				this._isClass(module) && Object.getPrototypeOf(module) === BaseTable
 		);
 
 		if (!Table)

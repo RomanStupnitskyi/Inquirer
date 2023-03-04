@@ -6,13 +6,10 @@ import { BaseLibrary } from "../../core/structures/BaseLibrary.js";
  */
 export class ComponentsLibrary extends BaseLibrary {
 	constructor(inquirer, properties = {}) {
-		super(inquirer, {
-			name: "components",
-			...properties,
-		});
+		super(inquirer, properties);
 	}
 
 	getLanguage(ctx) {
-		return this["languages"].get(ctx.user.language);
+		return this.getManager("languages").modules.get(ctx.user.language);
 	}
 }

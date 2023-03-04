@@ -1,4 +1,4 @@
-import { BaseMiddleware } from "../../../libraries/observers/base/BaseMiddleware.js";
+import { BaseMiddleware } from "../../../libraries/observers/middlewares/MiddlewaresManager.js";
 
 export default class CommandsHandlerMiddleware extends BaseMiddleware {
 	constructor(inquirer, properties) {

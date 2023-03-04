@@ -1,4 +1,4 @@
-import { BaseLanguage } from "../../../libraries/components/base/BaseLanguage.js";
+import { BaseLanguage } from "../../../libraries/components/languages/LanguagesManager.js";
 
 export default class EnglishLanguage extends BaseLanguage {
 	constructor(inquirer, properties) {
@@ -11,13 +11,13 @@ export default class EnglishLanguage extends BaseLanguage {
 		);
 	}
 
-	get localKeys() {
+	get _localKeys() {
 		return {
-			name: "name",
+			ask_question: "❓ Send prompt",
 		};
 	}
 
-	get keys() {
+	get _keys() {
 		return {
 			functionalIsDeveloping:
 				"Sorry, but you cannot use this functional right now 😢",

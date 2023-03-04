@@ -138,6 +138,14 @@ export class Collection extends Map {
 		return collection;
 	}
 
+	find(callback) {
+		for (const value of this.values()) {
+			const exists = callback(value);
+			if (exists) return value;
+		}
+		return undefined;
+	}
+
 	/**
 	 * Formatting collection to object
 	 * @returns Object as collection parameters in format { key: value }

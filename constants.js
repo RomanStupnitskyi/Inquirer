@@ -80,19 +80,11 @@ export default {
 		},
 	},
 	// Core paths
-	corePaths: {
-		root: _str2path("./"),
-		libraries: _str2path("./libraries"),
-		core: _str2path("./core"),
-	},
-	// Source paths
 	paths: {
-		root: _str2path("./source/"),
-		dbTables: _str2path("./core/database/tables/"),
-		services: _str2path("./source/services/"),
-		components: _str2path("./source/components/"),
-		observers: _str2path("./source/observers/"),
-		pieces: _str2path("./source/pieces/"),
+		root: _str2path("./"),
+		core: _str2path("./core"),
+		source: _str2path("./source/"),
+		libraries: _str2path("./libraries"),
 	},
 	// Database config
 	database: {

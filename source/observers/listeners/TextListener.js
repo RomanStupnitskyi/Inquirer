@@ -1,4 +1,4 @@
-import { BaseListener } from "../../../libraries/observers/base/BaseListener.js";
+import { BaseListener } from "../../../libraries/observers/listeners/ListenersManager.js";
 
 export default class TextListener extends BaseListener {
 	constructor(inquirer, properties) {

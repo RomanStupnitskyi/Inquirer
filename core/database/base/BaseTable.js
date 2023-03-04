@@ -5,11 +5,6 @@ import { Logger } from "../../../extensions/Logger.js";
  * @since 0.0.1
  */
 export class BaseTable {
-	/**
-	 * @param {*} inquirer Inquirer bot client
-	 * @param {*} connection The database connection
-	 * @param {*} options The table options
-	 */
 	constructor(inquirer, connection, options) {
 		this.inquirer = inquirer;
 		this.connection = connection;

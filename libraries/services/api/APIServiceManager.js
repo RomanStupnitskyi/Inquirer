@@ -1,7 +1,22 @@
+import { BaseManager } from "../../../core/structures/BaseManager.js";
 import { BaseModule } from "../../../core/structures/BaseModule.js";
 
 /**
- * Base API service class
+ * API services' manager class
+ * @since 0.0.1
+ * @extends BaseManager
+ */
+export default class APIServicesManager extends BaseManager {
+	constructor(inquirer, properties = {}) {
+		super(inquirer, {
+			module: { basename: "api", baseclass: BaseAPIService },
+			...properties,
+		});
+	}
+}
+
+/**
+ * API service base class
  * @since 0.0.1
  * @extends BaseModule
  */

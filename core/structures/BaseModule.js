@@ -1,3 +1,4 @@
+import { Context } from "../../extensions/context/Context.js";
 import { Logger } from "../../extensions/Logger.js";
 
 /**
@@ -5,13 +6,14 @@ import { Logger } from "../../extensions/Logger.js";
  * @since 0.0.1
  */
 export class BaseModule {
-	/**
-	 * @param {*} inquirer Inquirer bot client
-	 * @param {*} param1 Module parameters
-	 */
 	constructor(inquirer, { options, optionsArguments, ...properties }) {
 		this.inquirer = inquirer;
-		this._properties = properties;
+		Object.defineProperty(this, "_properties", {
+			value: properties,
+			writable: true,
+			enumerable: true,
+			configurable: false,
+		});
 
 		// Assign module options
 		this._assignModuleOptions(options, optionsArguments);
@@ -19,6 +21,7 @@ export class BaseModule {
 			value: new Logger(inquirer, {
 				title: `${properties.manager.name}:${this.name}`,
 			}),
+			writable: true,
 			enumerable: true,
 			configurable: false,
 		});
@@ -35,25 +38,38 @@ export class BaseModule {
 	}
 
 	/**
-	 * The module title
+	 * The module base configuration
 	 */
-	get title() {
-		return `${this._properties.module.name}:${this.name}`;
+	get base() {
+		return this._properties.base;
+	}
+
+	/**
+	 * The module's manager
+	 */
+	get manager() {
+		return this._properties.manager;
 	}
 
 	/**
 	 * Module executor
 	 * @param  {...any} args Some args to run module
 	 */
-	async execute(moduleThis, ...args) {
+	async execute(ctx, ...args) {
 		try {
+			if (Context.isContext(ctx)) {
+				const { update, telegram, botInfo } = ctx;
+				ctx = new Context(this.inquirer, update, telegram, botInfo);
+				await ctx.apply();
+			}
 			if (this.useExecutor && this.executeLog) {
 				if (!this.log)
 					this._logger.warn(
 						"Cannot log execute calls: method 'log' is not exists"
 					);
-				else this.log(...args);
+				else this.log(ctx, ...args);
 			}
+			const moduleThis = Context.isContext(ctx) ? ctx : this;
 			await this._run.call(moduleThis, ...args);
 		} catch (error) {
 			this._logger.error("An error occurred while module calling", error);
@@ -66,7 +82,7 @@ export class BaseModule {
 	initialize() {
 		try {
 			this._logger.debug("Initializing...");
-			if (this._prepare) this._prepare(this);
+			if (this._prepare) this._prepare();
 			this._logger.debug(`Initializing is complete`);
 		} catch (error) {
 			this._logger.error(
@@ -134,7 +150,7 @@ export class BaseModule {
 			throw new Error(
 				`Option argument is not exists: the option '${option.id}' is required`
 			);
-		const has = this._properties.manager.cache.hasByValue({
+		const has = this.manager.cache.hasByValue({
 			[option.id]: argument,
 		});
 		if (option.unique && has)

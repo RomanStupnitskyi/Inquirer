@@ -2,23 +2,20 @@ import { Telegraf } from "telegraf";
 
 import { MySQL } from "./database/MySQL.js";
 import constants from "../constants.js";
-import { LibrariesLoader } from "./LibrariesLoader.js";
+import { LibrariesAutoLoader } from "./LibrariesLoader.js";
 
 /**
- * Telegram bot client 'Inquirer'
+ * Inquirer bot client
  * @since 0.0.1
  * @extends Telegraf
  */
 export class InquirerClient extends Telegraf {
-	/**
-	 * @param {*} token The telegram bot token
-	 */
 	constructor(token = constants.token) {
 		super(token);
 		this.constants = Object.freeze(constants);
 
 		this.mysql = new MySQL(this);
-		this.libraries = new LibrariesLoader(this);
+		this.libraries = new LibrariesAutoLoader(this);
 	}
 
 	/**
