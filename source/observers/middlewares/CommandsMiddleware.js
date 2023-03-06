@@ -19,9 +19,9 @@ export default class CommandsHandlerMiddleware extends BaseMiddleware {
 		if (!commandName.startsWith("/")) return next();
 		commandName = commandName.replace(/\//, "");
 
-		this.command = this.inquirer.pieces.cache
-			.get("commands")
-			.cache.get(commandName);
+		this.command = this.inquirer.pieces
+			.getManager("commands")
+			.getModule(commandName);
 		if (this.command) return await this.command.execute(this);
 
 		next();

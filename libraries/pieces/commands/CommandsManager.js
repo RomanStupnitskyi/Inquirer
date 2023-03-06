@@ -24,6 +24,7 @@ export class BaseCommand extends BaseModule {
 	constructor(inquirer, optionsArguments, properties = {}) {
 		super(inquirer, {
 			useExecutor: true,
+			executeLog: true,
 			options: [
 				{
 					id: "description",
@@ -47,6 +48,16 @@ export class BaseCommand extends BaseModule {
 			optionsArguments,
 			...properties,
 		});
+	}
+
+	log(context) {
+		const fullName = context.user.fullName;
+		const username = context.user.username
+			? `@${context.user.username}`
+			: "@invalid_user";
+		this._logger.debug(
+			`${fullName} (${username}:${context.user.id}): ${context.message.text}`
+		);
 	}
 
 	_prepare() {

@@ -24,12 +24,13 @@ export class BaseButton extends BaseModule {
 	constructor(inquirer, optionsArguments, properties = {}) {
 		super(inquirer, {
 			useExecutor: true,
+			executeLog: true,
 			options: [
 				{
-					id: "labels",
-					type: Array,
+					id: "label",
+					type: String,
 					unique: true,
-					default: [],
+					default: "",
 				},
 				{
 					id: "useHear",
@@ -45,6 +46,16 @@ export class BaseButton extends BaseModule {
 			optionsArguments,
 			...properties,
 		});
+	}
+
+	log(context) {
+		const fullName = context.user.fullName;
+		const username = context.user.username
+			? `@${context.user.username}`
+			: "@invalid_user";
+		this._logger.debug(
+			`${fullName} (${username}:${context.user.id}): ${context.message.text}`
+		);
 	}
 
 	_prepare() {

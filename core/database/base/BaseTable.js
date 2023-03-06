@@ -10,7 +10,7 @@ export class BaseTable {
 		this.connection = connection;
 
 		this._options = options;
-		this._default = this.inquirer.constants.tableDefault;
+		this._config = this.inquirer.constants.database;
 
 		this._logger = new Logger(inquirer, {
 			title: `mysql:${this.name}`,
@@ -38,9 +38,33 @@ export class BaseTable {
 			this._logger.fatal(
 				"Option 'statement' is not exists: the option is required"
 			);
+
 		return Object.entries(statement)
-			.map(([key, value]) => `${key} ${value}`)
-			.join(",\n");
+			.map(([key, parameters]) => {
+				let { type, count } = parameters;
+				type = type.toUpperCase();
+
+				if (
+					this._config.countableTypes.includes(type) &&
+					!count &&
+					!["number", "string", "boolean"].includes(typeof count)
+				)
+					this._logger.fatal(
+						`Type '${type}' is countable: option 'count' is not exists`
+					);
+
+				const optionDefault = parameters.default
+					? `DEFAULT ${
+							typeof parameters.default === "string"
+								? `'${parameters.default}'`
+								: parameters.default
+					  }`
+					: "";
+				return `${key} ${type}${
+					count ? `(${count})` : ""
+				} ${optionDefault}`;
+			})
+			.join(",");
 	}
 
 	/**
@@ -56,7 +80,7 @@ export class BaseTable {
 
 			this._logger.debug("Initialization is complete");
 		} catch (error) {
-			this._logger.debug(
+			this._logger.fatal(
 				`An error occurred while initializing table`,
 				error
 			);

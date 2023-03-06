@@ -21,8 +21,8 @@ export class MySQL {
 		this.cache = new Collection();
 		Object.defineProperty(this, "_logger", {
 			value: new Logger(inquirer, { title: "mysql" }),
-			writable: true,
-			enumerable: true,
+			writable: false,
+			enumerable: false,
 			configurable: false,
 		});
 	}
@@ -40,7 +40,7 @@ export class MySQL {
 				database: this.#config.name,
 				password: this.#config.password,
 			});
-			this._logger.debug("Database connect is complete");
+			this._logger.complete("Database connection is complete");
 		} catch (error) {
 			this._logger.fatal(
 				"An error occurred while database was connecting",
@@ -64,7 +64,7 @@ export class MySQL {
 				this.tables.set(Table.name, Table);
 			}
 
-			this._logger.debug(
+			this._logger.complete(
 				`Successfully loaded ${this.tables.size} tables\nTables loading is complete`
 			);
 		} catch (error) {
@@ -86,8 +86,8 @@ export class MySQL {
 				this.cache.set(table.name, table);
 			}
 
-			this._logger.debug(
-				`Successfully initialized ${this.cache.size} tables\nDatabase tables intitializing is complete`
+			this._logger.complete(
+				`Successfully initialized ${this.cache.size} tables\nDatabase tables intitialization is complete`
 			);
 		} catch (error) {
 			this._logger.fatal(

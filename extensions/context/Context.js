@@ -6,6 +6,10 @@ export class Context extends TelegrafContext {
 		super(...options);
 		this.inquirer = inquirer;
 		this.user = new User(this);
+
+		for (const [name, manager] of this.inquirer.components) {
+			this[name] = manager;
+		}
 	}
 
 	async apply() {
@@ -13,9 +17,19 @@ export class Context extends TelegrafContext {
 		return this;
 	}
 
-	async replyWithReplica(key, ...args) {
+	async replyWithReplica(keyParameters, ...replyArgs) {
+		if (typeof keyParameters === "string") {
+			const key = keyParameters;
+			const replica = this.user.language.getReplica(key);
+			return await this.reply(replica, ...replyArgs);
+		}
+
+		const { key, args } = keyParameters;
 		const replica = this.user.language.getReplica(key);
-		return await this.reply(replica, ...args);
+
+		if (typeof replica === "function")
+			return await this.reply(replica(...args), ...replyArgs);
+		return await this.reply(replica, ...replyArgs);
 	}
 
 	static isContext(context) {

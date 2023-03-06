@@ -10,8 +10,8 @@ export class BaseModule {
 		this.inquirer = inquirer;
 		Object.defineProperty(this, "_properties", {
 			value: properties,
-			writable: true,
-			enumerable: true,
+			writable: false,
+			enumerable: false,
 			configurable: false,
 		});
 
@@ -21,8 +21,8 @@ export class BaseModule {
 			value: new Logger(inquirer, {
 				title: `${properties.manager.name}:${this.name}`,
 			}),
-			writable: true,
-			enumerable: true,
+			writable: false,
+			enumerable: false,
 			configurable: false,
 		});
 
@@ -62,7 +62,7 @@ export class BaseModule {
 				ctx = new Context(this.inquirer, update, telegram, botInfo);
 				await ctx.apply();
 			}
-			if (this.useExecutor && this.executeLog) {
+			if (this._properties.executeLog) {
 				if (!this.log)
 					this._logger.warn(
 						"Cannot log execute calls: method 'log' is not exists"
@@ -139,11 +139,9 @@ export class BaseModule {
 		if (!option.required && !argument) {
 			if (
 				!option.default &&
-				!["boolean", "number"].includes(typeof option.default)
+				!["boolean", "number", "string"].includes(typeof option.default)
 			)
-				throw new Error(
-					`Option '${option.id}' must be have default argument`
-				);
+				return null;
 			return option.default;
 		}
 		if (option.required && !argument)

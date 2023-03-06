@@ -20,7 +20,8 @@ export class BaseManager {
 		});
 		Object.defineProperty(this, "_logger", {
 			value: new Logger(inquirer, { title: `manager:${this.name}` }),
-			enumerable: true,
+			writable: false,
+			enumerable: false,
 			configurable: false,
 		});
 
@@ -50,11 +51,20 @@ export class BaseManager {
 	}
 
 	/**
-	 * Load manager modules
+	 * Get module
+	 * @param {*} name The module name
+	 * @returns Module or undefined
 	 */
-	async loadModules() {
+	getModule(name) {
+		return this.modules.get(name);
+	}
+
+	/**
+	 * Handle manager modules
+	 */
+	async handleModules() {
 		try {
-			this._logger.debug("Loading modules...");
+			this._logger.debug("Handling modules...");
 
 			const modulesPathFolder = join(
 				this.inquirer.constants.paths.source,
@@ -65,20 +75,14 @@ export class BaseManager {
 			for (const pathToModule of pathsToModules) {
 				const Module = await this._importModule(pathToModule);
 
-				const name =
-					Module.name === "default"
-						? basename(pathToModule).replace(/\.js/, "")
-						: Module.name;
-				if (this.cache.has(name)) {
-					this._logger.warn(`Module ${name} already exists`);
-					continue;
-				}
-				this.cache.set(name, Module);
-				this._logger.debug(`Module '${Module.name}' successfully loaded`);
+				const module = await this._initializeModule(Module);
+				this.cache.set(module.name, Module);
+				this.modules.set(module.name, module);
+				this._logger.debug(`Module '${Module.name}' successfully handled`);
 			}
 
-			this._logger.debug(
-				`Successfully loaded ${this.cache.size} modules\nLoading modules is complete`
+			this._logger.complete(
+				`Successfully handled ${this.cache.size} modules\nHandling modules is complete`
 			);
 		} catch (error) {
 			this._logger.fatal(error);
@@ -88,28 +92,20 @@ export class BaseManager {
 	/**
 	 * Initialize manager modules
 	 */
-	async initializeModules() {
+	async _initializeModule(Module) {
 		try {
-			this._logger.debug("Initializing modules...");
+			this._logger.debug(`Initializing module ${Module.name} ...`);
 
-			if (this._prepareModules) {
-				this._prepareModules();
-				this._logger.debug("Modules successfully preparing");
-			}
-
-			for (const Module of this.cache.values()) {
-				const module = new Module(this.inquirer, {
-					manager: this,
-					base: this.module,
-				});
-
-				module.initialize();
-				this.modules.set(module.name, module);
-			}
+			const module = new Module(this.inquirer, {
+				manager: this,
+				base: this.module,
+			});
+			module.initialize();
 
 			this._logger.debug(
-				`Successfully initialized ${this.modules.size} modules\nModules initialization is complete`
+				`Module '${module.name}' initialization is complete`
 			);
+			return module;
 		} catch (error) {
 			this._logger.fatal(error);
 		}
@@ -124,7 +120,7 @@ export class BaseManager {
 		const folderExists = await pathExists(path);
 		const folderEnsure = this.inquirer.constants.folderEnsure;
 		if (!folderExists) {
-			if (!folderEnsure) throw new Error(`Path '${path}' is no exists`);
+			if (!folderEnsure) throw new Error(`Path '${path}' is not exists`);
 			await mkdirs(path);
 			return [];
 		}

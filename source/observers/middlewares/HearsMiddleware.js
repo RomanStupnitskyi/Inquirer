@@ -14,7 +14,7 @@ export default class HearsHandlerMiddleware extends BaseMiddleware {
 	async _run(next) {
 		const hear = this.inquirer.pieces
 			.getManager("hears")
-			.modules.find((module) => {
+			.getModule((module) => {
 				return module.labels.includes(this.message.text);
 			});
 		if (hear) return await hear["execute"](this);

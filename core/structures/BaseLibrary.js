@@ -23,8 +23,8 @@ export class BaseLibrary extends Collection {
 		this.cache = new Collection();
 		Object.defineProperty(this, "_logger", {
 			value: new Logger(inquirer, { title: `library:${this.name}` }),
-			writable: true,
-			enumerable: true,
+			writable: false,
+			enumerable: false,
 			configurable: false,
 		});
 	}
@@ -66,7 +66,7 @@ export class BaseLibrary extends Collection {
 				this._logger.debug(`Successfully loaded manager '${Manager.name}'`);
 			}
 
-			this._logger.debug(
+			this._logger.complete(
 				`Successfully loaded ${this.cache.size} managers\nManagers loading is complete`
 			);
 		} catch (error) {
@@ -83,9 +83,10 @@ export class BaseLibrary extends Collection {
 
 			// middlewares will not work without sorting (middlewares must be
 			// initializing before listeners), otherwise the sorting can be deleted
-			const managers = [...this.cache.entries()].sort((a, b) =>
-				a < b ? 1 : -1
-			);
+			const managers =
+				this.name === "observers"
+					? [...this.cache.entries()].sort((a, b) => (a < b ? 1 : -1))
+					: this.cache.entries();
 
 			let size = 0;
 			for (const [name, Manager] of managers) {
@@ -96,16 +97,14 @@ export class BaseLibrary extends Collection {
 					path: Manager.path,
 					library: this,
 				});
-
-				await manager.loadModules();
-				await manager.initializeModules();
+				await manager.handleModules();
 
 				this.set(name, manager);
 				size += manager.modules.size;
 
 				this._logger.debug(`Successfully initialized manager '${name}'`);
 			}
-			this._logger.debug(
+			this._logger.complete(
 				`Successfully initialized ${this.size} managers\nManagers initializing is complete`
 			);
 			return size;

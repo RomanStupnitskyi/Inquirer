@@ -26,7 +26,7 @@ export class BaseKeyboard extends BaseModule {
 			useExecutor: false,
 			options: [
 				{
-					id: "buttons",
+					id: "rows",
 					type: Array,
 					default: [],
 				},
@@ -41,12 +41,24 @@ export class BaseKeyboard extends BaseModule {
 		});
 	}
 
-	get keyboard() {
+	_prepare() {
+		for (const row of this.rows) {
+			for (const buttonName of row) {
+				const button = this.manager.library
+					.getManager("buttons")
+					.getModule(buttonName);
+				if (!button) {
+					this.rows[this.rows.indexOf(row)].splice(row.indexOf(button), 1);
+					this._logger.warn(`Button '${buttonName}' is not exists`);
+					continue;
+				}
+			}
+		}
+	}
+
+	keyboard(context) {
 		const buttons = [];
-		const back = this.inquirer.components
-			.getManager("buttons")
-			.modules.get("back");
-		for (const line of this.buttons) {
+		for (const line of this.rows) {
 			for (const buttonName of line) {
 				const button = this.inquirer.components
 					.getManager("buttons")
@@ -59,13 +71,61 @@ export class BaseKeyboard extends BaseModule {
 					continue;
 				}
 
-				const index = this.buttons.indexOf(line);
+				const index = this.rows.indexOf(line);
 				if (!buttons[index]) buttons.push([]);
-				buttons[index].push([button.text, button.name]);
+
+				const label = button.byLanguageKey
+					? context.user.language.getLocalReplica(button.name) ||
+					  button.label
+					: button.label;
+				if (!label && !button.label) {
+					this._logger.warn(`Button ${button.name} doesn't have labels`);
+					continue;
+				}
+				buttons[index].push(label);
 			}
 		}
+		return {
+			reply_markup: {
+				keyboard: buttons,
+				resize_keyboard: this.resize_keyboard,
+			},
+		};
+	}
 
-		if (this.name !== "menu") buttons.push([back]);
-		return buttons;
+	inlineKeyboard() {
+		const buttons = [];
+		for (const line of this.rows) {
+			for (const buttonName of line) {
+				const button = this.inquirer.components
+					.getManager("buttons")
+					.modules.get(buttonName);
+				if (!button) {
+					this._logger.error(
+						this.name,
+						`Button '${buttonName}' is not defined`
+					);
+					continue;
+				}
+
+				const index = this.rows.indexOf(line);
+				if (!buttons[index]) buttons.push([]);
+
+				const label = button.byLanguageKey
+					? context.user.language.getLocalReplica(button.name) ||
+					  button.label
+					: button.label;
+				if (!label && !button.label) {
+					this._logger.warn(`Button ${button.name} doesn't have labels`);
+					continue;
+				}
+				buttons[index].push({ text: label, callback_data: button.name });
+			}
+		}
+		return {
+			reply_markup: {
+				keyboard: buttons,
+			},
+		};
 	}
 }

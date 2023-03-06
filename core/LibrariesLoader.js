@@ -17,9 +17,9 @@ export class LibrariesAutoLoader extends Collection {
 		this.inquirer = inquirer;
 		this.cache = new Collection();
 		Object.defineProperty(this, "_logger", {
-			value: new Logger(inquirer, { title: `library:${this.name}` }),
-			writable: true,
-			enumerable: true,
+			value: new Logger(inquirer, { title: `LibrariesLoader` }),
+			writable: false,
+			enumerable: false,
 			configurable: false,
 		});
 	}
@@ -44,7 +44,7 @@ export class LibrariesAutoLoader extends Collection {
 				this._logger.debug(`Successfully loaded '${Library.name}' library`);
 			}
 
-			this._logger.debug(
+			this._logger.complete(
 				`Successfully loaded ${this.cache.size} libraries\nLibraries loading is complete`
 			);
 		} catch (error) {
@@ -75,7 +75,7 @@ export class LibrariesAutoLoader extends Collection {
 				);
 			}
 
-			this._logger.debug(
+			this._logger.complete(
 				`Successfully initialized ${this.size} libraries\nLibraries initializing is complete`
 			);
 		} catch (error) {

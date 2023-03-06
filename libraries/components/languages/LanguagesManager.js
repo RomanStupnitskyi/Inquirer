@@ -96,4 +96,22 @@ export class BaseLanguage extends BaseModule {
 		if (replica?.constructor?.name === "Function") replica = replica(...args);
 		return replica || undefined;
 	}
+
+	/**
+	 * Check language has replica
+	 * @param {*} replica The language replica
+	 * @returns Boolean
+	 */
+	hasReplica(replica = "") {
+		return [...this.keys.values()].includes(replica);
+	}
+
+	/**
+	 * Check language has local replica
+	 * @param {*} replica The language local replica
+	 * @returns Boolean
+	 */
+	hasLocalReplica(replica = "") {
+		return [...this.localKeys.values()].includes(replica);
+	}
 }

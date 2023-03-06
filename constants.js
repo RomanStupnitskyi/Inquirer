@@ -14,6 +14,8 @@ export default {
 			n: 1,
 		},
 	},
+	// Folder will be created if not exists
+	folderEnsure: true,
 	// Use Telegraf commands (for example, client.command(name, callback))
 	telegrafCommands: false,
 	// Use Telegraf hears (for example, client.hears(name, callback))
@@ -55,26 +57,32 @@ export default {
 		showDate: true,
 		showType: true,
 		debug: {
-			date: chalk.gray,
-			type: chalk.bgCyan.bold,
+			date: chalk.gray.italic,
+			type: chalk.cyan,
 			title: chalk.cyan,
 			message: chalk.white,
 		},
+		complete: {
+			date: chalk.gray.italic,
+			type: chalk.magenta,
+			title: chalk.magenta,
+			message: chalk.greenBright,
+		},
 		warn: {
-			date: chalk.gray,
-			type: chalk.bgHex("#DEC11E").bold,
+			date: chalk.gray.italic,
+			type: chalk.hex("#DEC11E"),
 			title: chalk.hex("#DEC11E"),
 			message: chalk.white,
 		},
 		error: {
-			date: chalk.gray,
-			type: chalk.bgRed,
+			date: chalk.gray.italic,
+			type: chalk.red,
 			title: chalk.red,
-			message: chalk.red,
+			message: chalk.white,
 		},
 		fatal: {
-			date: chalk.gray,
-			type: chalk.bgRed,
+			date: chalk.gray.italic,
+			type: chalk.red,
 			title: chalk.red,
 			message: chalk.red,
 		},
@@ -85,9 +93,11 @@ export default {
 		core: _str2path("./core"),
 		source: _str2path("./source/"),
 		libraries: _str2path("./libraries"),
+		dbTables: _str2path("./core/database/tables/"),
 	},
 	// Database config
 	database: {
+		countableTypes: ["VARCHAR", "CHAR"],
 		name: process.env.db_name || "",
 		host: process.env.db_host || "",
 		port: process.env.db_port || "",

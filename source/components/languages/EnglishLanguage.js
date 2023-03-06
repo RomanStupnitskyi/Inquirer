@@ -13,7 +13,13 @@ export default class EnglishLanguage extends BaseLanguage {
 
 	get _localKeys() {
 		return {
+			// Permissions descriptions keys
+			use_commands: "Access to use commands",
+			use_hears: "Access to use hears",
+			use_buttons: "Access to use buttons",
+			// Buttons keys
 			ask_question: "❓ Send prompt",
+			hide_keyboard: "🫣 Hide menu",
 		};
 	}
 
@@ -26,6 +32,8 @@ export default class EnglishLanguage extends BaseLanguage {
 			chooseLanguage: "Choose a language:",
 			changedLanguage:
 				"✅ You have successfully changed your language to English",
+			keyboardHidden:
+				"👀 I've hidden the menu. To see it again, use the /show_menu or /settings command",
 		};
 	}
 }

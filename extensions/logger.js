@@ -35,20 +35,23 @@ export class Logger {
 		const { date, type, title, message } = this._config[logType];
 		const localeDate = new Date().toLocaleString();
 
-		const dateLog = this._config.showDate ? date(`[${localeDate}]`) : "";
+		const dateLog = this._config.showDate ? date(`${localeDate}`) : "";
 		const typeLog = this._config.showType
-			? type(`${logType.toUpperCase()}`)
+			? type(`[${logType.toUpperCase()}]`)
 			: "";
-		const titleLog = title(`(${this.title}): `);
-		const prefixLog = dateLog + " " + typeLog + " " + titleLog;
+		const titleLog = title(`(${this.title}):`);
+		const prefixLog = [dateLog, typeLog, titleLog]
+			.filter((i) => !!i)
+			.join(" ");
 
 		const messageLog =
 			prefixLog +
+			" " +
 			messages
 				.map((m) => {
 					if (typeof m === "object") m = m.stack ?? m;
 					return message(
-						!m.split ? m : m.split("\n").join(`\n${prefixLog}`)
+						!m.split ? m : m.split("\n").join(`\n${prefixLog} `)
 					);
 				})
 				.join(`\n${prefixLog}`);
@@ -57,6 +60,10 @@ export class Logger {
 
 	debug(...messages) {
 		return this._log("debug", ...messages);
+	}
+
+	complete(...messages) {
+		return this._log("complete", ...messages);
 	}
 
 	warn(...messages) {

@@ -1,5 +1,6 @@
 import { BaseManager } from "../../../core/structures/BaseManager.js";
 import { BaseModule } from "../../../core/structures/BaseModule.js";
+import { Context } from "../../../extensions/context/Context.js";
 
 /**
  * Listeners' manager class
@@ -24,6 +25,7 @@ export class BaseListener extends BaseModule {
 	constructor(inquirer, optionsArguments, properties = {}) {
 		super(inquirer, {
 			useExecutor: true,
+			executeLog: true,
 			options: [
 				{
 					id: "cooldown",
@@ -42,6 +44,18 @@ export class BaseListener extends BaseModule {
 			optionsArguments,
 			...properties,
 		});
+	}
+
+	log(context) {
+		if (context instanceof Context) {
+			const fullName = context.user.fullName;
+			const username = context.user.username
+				? `@${context.user.username}`
+				: "@invalid_user";
+			this._logger.debug(
+				`${fullName} (${username}:${context.user.id}) => ${context.message.text}`
+			);
+		}
 	}
 
 	_prepare() {

@@ -13,6 +13,9 @@ export default class StartCommand extends BaseCommand {
 	}
 
 	async _run() {
-		await this.reply("Hello!");
+		await this.replyWithReplica(
+			"welcome",
+			this.keyboards.getModule("main").keyboard(this)
+		);
 	}
 }

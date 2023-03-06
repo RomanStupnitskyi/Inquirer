@@ -10,10 +10,29 @@ export default class UserTable extends BaseTable {
 		super(inquirer, connection, {
 			name: "user",
 			statement: {
-				id: "VARCHAR(10) NOT NULL",
-				tokenGPT: "VARCHAR(51) DEFAULT NULL",
-				temperature: "INT(100) DEFAULT 0",
-				language: "VARCHAR(2) DEFAULT 'en'",
+				id: {
+					type: "varchar",
+					count: 10,
+					default: "not null",
+				},
+				roles: {
+					type: "json",
+				},
+				tokenGPT: {
+					type: "varchar",
+					count: 51,
+					default: "null",
+				},
+				temperature: {
+					type: "int",
+					count: 100,
+					default: 0,
+				},
+				language: {
+					type: "varchar",
+					count: 2,
+					default: "en",
+				},
 			},
 		});
 	}

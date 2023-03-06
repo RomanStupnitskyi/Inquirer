@@ -6,7 +6,7 @@ export default class AskQuestion extends BaseButton {
 			inquirer,
 			{
 				name: "ask_question",
-				labels: ["Hi"],
+				label: "Hi",
 				useHear: true,
 				byLanguageKey: true,
 			},
