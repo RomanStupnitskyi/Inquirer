@@ -74,9 +74,9 @@ export class User {
 	 * @since 0.0.1
 	 */
 	get language() {
-		return this.#context.inquirer.components
-			.getManager("languages")
-			.modules.get(this.properties.language);
+		return this.#context.inquirer.components.languages.getModule(
+			this.data.language
+		);
 	}
 
 	get isOwner() {
@@ -88,19 +88,41 @@ export class User {
 	 * @since 0.0.1
 	 */
 	async initialize() {
-		const properties = await this.#context.inquirer.mysql.user.get({
+		const data = await this.#context.inquirer.mysql.user.get({
 			id: this.id,
 		});
-		if (properties[0]) this.properties = properties[0];
-		else {
+		if (data[0]) {
+			this.data = data[0];
+			if (this.data.roles) this.data.roles = JSON.parse(this.data.roles);
+		} else {
 			const language = this.#context.inquirer.components.languages.get(
 				this.contextUser.language_code
 			);
-			const properties = await this.#context.inquirer.mysql.user.create({
+			const data = await this.#context.inquirer.mysql.user.create({
 				id: this.id,
 				language: language ? language.name : "en",
 			});
-			this.properties = properties[0];
+			this.data = data[0];
 		}
+	}
+
+	async changeLanguage(language = "en") {
+		if (!this.#context.inquirer.components.languages.getModule(language))
+			return false;
+		await this.#context.inquirer.mysql.user.update(
+			{ id: this.id },
+			{ language }
+		);
+		this.data.language = language;
+		return true;
+	}
+
+	async update(parameters) {
+		const updated = await this.#context.inquirer.mysql.user.update(
+			{ id: this.id },
+			parameters
+		);
+		this.data = updated;
+		return updated;
 	}
 }

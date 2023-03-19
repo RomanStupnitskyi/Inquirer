@@ -1,4 +1,4 @@
-import { BaseMiddleware } from "../../../libraries/observers/middlewares/MiddlewaresManager.js";
+import { BaseMiddleware } from "../../../stores/observers/middlewares/MiddlewaresManager.js";
 
 export default class CommandsHandlerMiddleware extends BaseMiddleware {
 	constructor(inquirer, properties) {
@@ -19,10 +19,12 @@ export default class CommandsHandlerMiddleware extends BaseMiddleware {
 		if (!commandName.startsWith("/")) return next();
 		commandName = commandName.replace(/\//, "");
 
-		this.command = this.inquirer.pieces
-			.getManager("commands")
-			.getModule(commandName);
-		if (this.command) return await this.command.execute(this);
+		const command = this.inquirer.pieces.commands.getModule(commandName);
+		if (command) {
+			this.piece = command;
+			return await command["execute"](this);
+		} else if (this.message.text.startsWith("/"))
+			return await this.replyWithReplica("commandNotFound");
 
 		next();
 	}

@@ -1,4 +1,4 @@
-import { BaseRole } from "../../../libraries/permissions/roles/RolesManager.js";
+import { BaseRole } from "../../../stores/permissions/roles/RolesManager.js";
 
 export class OwnerRole extends BaseRole {
 	constructor(inquirer, properties) {

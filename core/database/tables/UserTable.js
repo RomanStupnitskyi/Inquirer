@@ -23,10 +23,21 @@ export default class UserTable extends BaseTable {
 					count: 51,
 					default: "null",
 				},
+				modelGPT: {
+					type: "varchar",
+					count: 30,
+					default: "text-davinci-003",
+				},
 				temperature: {
 					type: "int",
 					count: 100,
 					default: 0,
+				},
+				intro: {
+					type: "varchar",
+					count: 2000,
+					default:
+						"In answer wrap only the code in ```, if there is no code in the answer, don't do it.",
 				},
 				language: {
 					type: "varchar",

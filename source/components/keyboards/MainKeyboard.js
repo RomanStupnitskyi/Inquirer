@@ -1,4 +1,4 @@
-import { BaseKeyboard } from "../../../libraries/components/keyboards/KeyboardsManager.js";
+import { BaseKeyboard } from "../../../stores/components/keyboards/KeyboardsManager.js";
 
 export default class Main extends BaseKeyboard {
 	constructor(inquirer, properties) {
@@ -7,8 +7,7 @@ export default class Main extends BaseKeyboard {
 			{
 				name: "main",
 				rows: [["ask_question", "hide_keyboard"]],
-				useHear: true,
-				byLanguageKey: true,
+				main: true,
 			},
 			properties
 		);

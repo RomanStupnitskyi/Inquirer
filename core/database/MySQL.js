@@ -19,6 +19,7 @@ export class MySQL {
 
 		this.tables = new Collection();
 		this.cache = new Collection();
+
 		Object.defineProperty(this, "_logger", {
 			value: new Logger(inquirer, { title: "mysql" }),
 			writable: false,
@@ -61,11 +62,12 @@ export class MySQL {
 			);
 			for (const filePath of tablesFilesPaths) {
 				const Table = await this._importTableClass(filePath);
-				this.tables.set(Table.name, Table);
+				this.cache.set(Table.name, Table);
 			}
 
 			this._logger.complete(
-				`Successfully loaded ${this.tables.size} tables\nTables loading is complete`
+				`Successfully loaded ${this.cache.size} tables`,
+				"Loading tables is complete"
 			);
 		} catch (error) {
 			this._logger.fatal("An error occurred while table loading", error);
@@ -79,15 +81,16 @@ export class MySQL {
 		try {
 			this._logger.debug("Initializing database tables...");
 
-			for (const Table of this.tables.values()) {
+			for (const Table of this.cache.values()) {
 				const table = new Table(this.inquirer, this.connection);
 				await table.initialize();
 				this[table.name] = table;
-				this.cache.set(table.name, table);
+				this.tables.set(table.name, table);
 			}
 
 			this._logger.complete(
-				`Successfully initialized ${this.cache.size} tables\nDatabase tables intitialization is complete`
+				`Successfully initialized ${this.tables.size} tables`,
+				"DB tables intitialization is complete"
 			);
 		} catch (error) {
 			this._logger.fatal(

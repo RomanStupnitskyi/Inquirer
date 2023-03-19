@@ -54,7 +54,7 @@ export class Logger {
 						!m.split ? m : m.split("\n").join(`\n${prefixLog} `)
 					);
 				})
-				.join(`\n${prefixLog}`);
+				.join(`\n${prefixLog} `);
 		return console.log(messageLog);
 	}
 

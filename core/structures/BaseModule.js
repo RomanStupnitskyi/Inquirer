@@ -8,6 +8,7 @@ import { Logger } from "../../extensions/Logger.js";
 export class BaseModule {
 	constructor(inquirer, { options, optionsArguments, ...properties }) {
 		this.inquirer = inquirer;
+
 		Object.defineProperty(this, "_properties", {
 			value: properties,
 			writable: false,
@@ -17,9 +18,10 @@ export class BaseModule {
 
 		// Assign module options
 		this._assignModuleOptions(options, optionsArguments);
+
 		Object.defineProperty(this, "_logger", {
 			value: new Logger(inquirer, {
-				title: `${properties.manager.name}:${this.name}`,
+				title: `${properties.manager.name}:${optionsArguments.name}`,
 			}),
 			writable: false,
 			enumerable: false,
@@ -57,38 +59,32 @@ export class BaseModule {
 	 */
 	async execute(ctx, ...args) {
 		try {
-			if (Context.isContext(ctx)) {
+			let context = ctx;
+			if (!Context.isContext(ctx)) {
 				const { update, telegram, botInfo } = ctx;
-				ctx = new Context(this.inquirer, update, telegram, botInfo);
-				await ctx.apply();
+				context = new Context(this.inquirer, update, telegram, botInfo);
+
+				const contextProperties = Object.getOwnPropertyNames(context);
+				const properties = Object.getOwnPropertyNames(ctx).filter(
+					(property) => !contextProperties.includes(property)
+				);
+
+				for (const property of properties) {
+					context[property] = ctx[property];
+				}
+				await context.apply();
 			}
 			if (this._properties.executeLog) {
 				if (!this.log)
 					this._logger.warn(
 						"Cannot log execute calls: method 'log' is not exists"
 					);
-				else this.log(ctx, ...args);
+				else this.log(context, ...args);
 			}
-			const moduleThis = Context.isContext(ctx) ? ctx : this;
+			const moduleThis = Context.isContext(context) ? context : this;
 			await this._run.call(moduleThis, ...args);
 		} catch (error) {
 			this._logger.error("An error occurred while module calling", error);
-		}
-	}
-
-	/**
-	 * Initialize the module
-	 */
-	initialize() {
-		try {
-			this._logger.debug("Initializing...");
-			if (this._prepare) this._prepare();
-			this._logger.debug(`Initializing is complete`);
-		} catch (error) {
-			this._logger.error(
-				"An error occurred while module initializing",
-				error
-			);
 		}
 	}
 
@@ -144,10 +140,12 @@ export class BaseModule {
 				return null;
 			return option.default;
 		}
+
 		if (option.required && !argument)
 			throw new Error(
 				`Option argument is not exists: the option '${option.id}' is required`
 			);
+
 		const has = this.manager.cache.hasByValue({
 			[option.id]: argument,
 		});
@@ -155,6 +153,7 @@ export class BaseModule {
 			throw new Error(
 				`Option '${option.id}' argument '${argument}' already exists in another module.`
 			);
+
 		if (
 			option.type &&
 			Object.getPrototypeOf(argument).constructor !== option.type

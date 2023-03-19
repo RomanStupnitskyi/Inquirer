@@ -2,7 +2,7 @@ import { Telegraf } from "telegraf";
 
 import { MySQL } from "./database/MySQL.js";
 import constants from "../constants.js";
-import { LibrariesAutoLoader } from "./LibrariesLoader.js";
+import { StoresAutoLoader } from "./StoresAutoLoader.js";
 
 /**
  * Inquirer bot client
@@ -15,15 +15,15 @@ export class InquirerClient extends Telegraf {
 		this.constants = Object.freeze(constants);
 
 		this.mysql = new MySQL(this);
-		this.libraries = new LibrariesAutoLoader(this);
+		this.stores = new StoresAutoLoader(this);
 	}
 
 	/**
 	 * Handle all project parts
 	 */
 	async _handle() {
-		await this.libraries.loadLibraries();
-		await this.libraries.initializeLibraries();
+		await this.stores.loadStores();
+		await this.stores.initializeStores();
 
 		await this.mysql.connect();
 		await this.mysql.loadTables();

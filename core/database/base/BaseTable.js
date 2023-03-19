@@ -5,11 +5,11 @@ import { Logger } from "../../../extensions/Logger.js";
  * @since 0.0.1
  */
 export class BaseTable {
-	constructor(inquirer, connection, options) {
+	constructor(inquirer, connection, parameters) {
 		this.inquirer = inquirer;
 		this.connection = connection;
 
-		this._options = options;
+		this._parameters = parameters;
 		this._config = this.inquirer.constants.database;
 
 		this._logger = new Logger(inquirer, {
@@ -21,7 +21,7 @@ export class BaseTable {
 	 * The table name
 	 */
 	get name() {
-		const name = this._options.name;
+		const name = this._parameters.name;
 		if (!name)
 			this._logger.fatal(
 				"Option 'name' is not exists: the option is requied"
@@ -33,7 +33,7 @@ export class BaseTable {
 	 * The table statement
 	 */
 	get statement() {
-		const statement = this._options.statement;
+		const statement = this._parameters.statement;
 		if (!statement)
 			this._logger.fatal(
 				"Option 'statement' is not exists: the option is required"
@@ -56,7 +56,7 @@ export class BaseTable {
 				const optionDefault = parameters.default
 					? `DEFAULT ${
 							typeof parameters.default === "string"
-								? `'${parameters.default}'`
+								? `'${parameters.default.replace(/\'/, "''")}'`
 								: parameters.default
 					  }`
 					: "";
@@ -95,10 +95,23 @@ export class BaseTable {
 	async create(options = {}) {
 		try {
 			const where = Object.entries(options)
-				.map(([key, value]) => `${key}=${value}`)
+				.map(
+					([key, value]) =>
+						`${key}=${
+							typeof value === "string"
+								? `'${value.replace(/\'/, "''")}'`
+								: value
+						}`
+				)
 				.join(" AND ");
 			const keys = Object.keys(options).join(",");
-			const values = Object.values(options).join(",");
+			const values = Object.values(options)
+				.map((value) =>
+					typeof value === "string"
+						? `'${value.replace(/\'/, "''")}'`
+						: value
+				)
+				.join(",");
 			await this.connection.query(
 				`INSERT INTO ${this.name} (${keys}) VALUES (${values})`
 			);
@@ -123,12 +136,23 @@ export class BaseTable {
 	async update(where = {}, options = {}) {
 		try {
 			where = Object.entries(where)
-				.map(([key, value]) => `${key} = ${value}`)
+				.map(
+					([key, value]) =>
+						`${key} = ${
+							typeof value === "string"
+								? `'${value.replace(/\'/, "''")}'`
+								: value
+						}`
+				)
 				.join(" AND ");
 			options = Object.entries(options)
 				.map(
 					([key, value]) =>
-						`${key} = ${typeof value === "string" ? `'${value}'` : value}`
+						`${key} = ${
+							typeof value === "string"
+								? `'${value.replace(/\'/, "''")}'`
+								: value
+						}`
 				)
 				.join(",");
 			await this.connection.query(
@@ -156,7 +180,14 @@ export class BaseTable {
 	async get(where = {}, createIfNull = false) {
 		try {
 			const options = Object.entries(where)
-				.map(([key, value]) => `${key} = ${value}`)
+				.map(
+					([key, value]) =>
+						`${key} = ${
+							typeof value === "string"
+								? `'${value.replace(/\'/, "''")}'`
+								: value
+						}`
+				)
 				.join(" AND ");
 			let record = await this.connection.query(
 				`SELECT * FROM ${this.name} WHERE ${options}`

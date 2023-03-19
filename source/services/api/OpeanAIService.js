@@ -1,5 +1,5 @@
 import Centra from "centra";
-import { BaseAPIService } from "../../../libraries/services/api/APIServiceManager.js";
+import { BaseAPIService } from "../../../stores/services/api/APIServiceManager.js";
 
 /**
  * Class OpenAI for working with OpenAI API

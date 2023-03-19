@@ -1,4 +1,4 @@
-import { BasePermission } from "../../../libraries/permissions/permissions/PermissionsManager.js";
+import { BasePermission } from "../../../stores/permissions/permissions/PermissionsManager.js";
 
 export class UseHears extends BasePermission {
 	constructor(inquirer, properties) {

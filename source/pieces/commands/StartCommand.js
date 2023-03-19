@@ -1,4 +1,4 @@
-import { BaseCommand } from "../../../libraries/pieces/commands/CommandsManager.js";
+import { BaseCommand } from "../../../stores/pieces/commands/CommandsManager.js";
 
 export default class StartCommand extends BaseCommand {
 	constructor(inquirer, properties) {

@@ -33,8 +33,8 @@ export default {
 	// Default language
 	defaultLanguage: "en",
 	// Library parameters
-	library: {
-		managerFolderName: "managers",
+	store: {
+		assignManagersToClass: true, // Assign store's managers to the store
 	},
 	// Module default options
 	moduleDefaultOptions: [
@@ -92,7 +92,7 @@ export default {
 		root: _str2path("./"),
 		core: _str2path("./core"),
 		source: _str2path("./source/"),
-		libraries: _str2path("./libraries"),
+		stores: _str2path("./stores"),
 		dbTables: _str2path("./core/database/tables/"),
 	},
 	// Database config

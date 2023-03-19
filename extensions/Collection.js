@@ -1,162 +1,177 @@
 /**
- * Advanced Map with additional functional
+ * Advanced Map with additional functionality
  * @extends Map
  */
 export class Collection extends Map {
 	/**
-	 * @param {*} values Array of arrays like format [key, value]
+	 * Creates a new Collection instance.
+	 * @param {Object} options - Optional parameters for the Collection.
+	 * @param {boolean} options.assignProperties - Whether to assign elements to the Collection instance as properties.
+	 * @param {Object} values - The initial elements of the Collection.
 	 */
-	constructor(values = {}) {
-		if (typeof values !== "object")
-			throw new Error("Values must be an object");
+	constructor(options = { assignProperties: false }, values = {}) {
+		if (typeof values !== "object") {
+			throw new TypeError("Values must be an object");
+		}
+
 		super(values[Symbol.iterator] ? [...values] : Object.entries(values));
-	}
-
-	async getByValue(options = null) {
-		if (!options) return undefined;
-		let item;
-
-		const constructor = options?.constructor?.name;
-		if (constructor) {
-			for (const value of this.values) {
-				switch (constructor) {
-					case "Function":
-						if (options(value)) return value;
-						break;
-
-					case "AsyncFunction":
-						if (await options(value)) return value;
-						break;
-				}
-			}
-		}
-		for (const element of this.values()) {
-			if (typeof options === "string") return options === i;
-			const entries = Object.entries(options);
-			const result = [];
-			for (const [key, value] of entries) {
-				if (element[key] && element[key] === value) result.push(true);
-				else result.push(false);
-			}
-			if (result.reduce((a, b) => a && b)) item = element;
-		}
-		return item;
-	}
-
-	hasByValue(options = null) {
-		if (!options) return false;
-		let item;
-
-		const isFunction = options?.constructor?.name;
-		if (isFunction && isFunction === "Function") {
-			for (const value of this.values()) {
-				const result = options(value);
-				if (result) return true;
-			}
-		}
-		for (const element of this.values()) {
-			if (["string", "number"].includes(typeof options)) return value === i;
-			const entries = Object.entries(options);
-			const result = [];
-			for (const [key, value] of entries) {
-				if (element[key] && element[key] === value) result.push(true);
-				else result.push(false);
-			}
-			if (result.reduce((a, b) => a && b)) item = element;
-		}
-		return typeof item === "boolean" ? true : !!item;
+		Object.defineProperty(this, "_options", {
+			value: options,
+			writable: false,
+			enumerable: false,
+			configurable: false,
+		});
 	}
 
 	/**
-	 * Get many parameters of collection
-	 * @param {*} keys Key to get value from collection
+	 * Get an element from the Collection by value.
+	 * @param {*} options - The element options or callback.
+	 * @returns {*} The element or undefined.
 	 */
-	getMany(keys = []) {
-		const result = [];
-		for (const key of keys) {
-			result.push(this.get(key));
+	getByValue(options = null) {
+		if (!options) {
+			return undefined;
 		}
-		return result;
-	}
 
-	/**
-	 * Set many parameters to collection
-	 * @param {*} values Array of parameters in format [key, value]
-	 * @returns The collection with new parameters
-	 */
-	setMany(values = {}) {
-		if (typeof values !== "object")
-			throw new Error("Values must be an object");
-		if (values[Symbol.iterator] && !Array.isArray(values))
-			values = [...values];
-		if (!values[Symbol.iterator]) values = Object.entries(values);
-
-		for (let [key, value] of values) {
-			this.set(key, value);
-		}
-		return this;
-	}
-
-	/**
-	 * Delete many parameters of collection
-	 * @param {*} keys Array of parameters in format [key, value]
-	 * @returns The collection without deleted parameters
-	 */
-	deleteMany(keys = []) {
-		for (let key of keys) {
-			this.delete(key);
-		}
-		return this;
-	}
-
-	/**
-	 * Sync filter of parameters of collection
-	 * @param {*} callback Function that returns Boolean value
-	 * @returns New Collection with filtered parameters
-	 */
-	filter(callback) {
-		const entries = this.entries();
-		const collection = new this[Symbol.species]();
-		for (let [key, value] of entries) {
-			if (callback(value)) collection.set(key, value);
-			else continue;
-		}
-		return collection;
-	}
-
-	/**
-	 * Sync map that mapping parameters of collection
-	 * @param {*} callback Function that returns Boolean value
-	 * @returns New Collection with mapping parameters
-	 */
-	map(callback) {
-		const entries = this.entries();
-		const collection = new this[Symbol.species]();
-		for (let [key, value] of entries) {
-			collection.set(key, callback(value));
-		}
-		return collection;
-	}
-
-	find(callback) {
+		const isFunction = typeof options === "function";
 		for (const value of this.values()) {
-			const exists = callback(value);
-			if (exists) return value;
+			if (isFunction && options(value)) {
+				return value;
+			}
+
+			if (
+				typeof options === "object" &&
+				Object.entries(options).every(([key, val]) => value[key] === val)
+			) {
+				return value;
+			}
 		}
+
 		return undefined;
 	}
 
 	/**
-	 * Formatting collection to object
-	 * @returns Object as collection parameters in format { key: value }
+	 * Check if the Collection has an element by value.
+	 * @param {*} options - The element options.
+	 * @returns {boolean} True if an element exists with the specified value, false otherwise.
+	 */
+	hasByValue(options) {
+		const element = this.getByValue(options);
+		return ["boolean", "number", "string"].includes(typeof element)
+			? true
+			: !!element;
+	}
+
+	/**
+	 * Add an element to the Collection.
+	 * @param {*} key - The element identifier.
+	 * @param {*} value - The element value.
+	 */
+	set(key, value) {
+		super.set(key, value);
+		if (this._options.assignProperties && typeof key === "string") {
+			this[key] = value;
+		}
+	}
+
+	/**
+	 * Delete an element from the Collection.
+	 * @param {*} key - The element identifier.
+	 * @returns {*} The deleted element or undefined.
+	 */
+	delete(key) {
+		const element = this.get(key);
+		if (
+			element &&
+			this._options.assignProperties &&
+			typeof key === "string"
+		) {
+			super.delete(key);
+			delete this[key];
+		}
+
+		return element;
+	}
+
+	/**
+	 * Filter the elements of the Collection.
+	 * @param {Function} callback - A function that returns a boolean value.
+	 * @returns {Collection} A new Collection instance with filtered elements.
+	 */
+	filter(callback) {
+		const filtered = new this[Symbol.species](this._options);
+		for (const [key, value] of this.entries()) {
+			if (callback(value)) {
+				switch (this[Symbol.species]) {
+					case Collection:
+						filtered.set(key, callback(value));
+						break;
+
+					case Array:
+						filtered.push([key, value]);
+						break;
+
+					default:
+						filtered[key] = value;
+				}
+			}
+		}
+
+		return filtered;
+	}
+
+	/**
+	 * Map the elements of the Collection.
+	 * @param {Function} callback - A function that maps the elements.
+	 * @returns {Collection} A new Collection instance with mapped elements.
+	 */
+	map(callback) {
+		const mapped = new Collection(this._options);
+		for (const [key, value] of this.entries()) {
+			switch (this[Symbol.species]) {
+				case Collection:
+					mapped.set(key, callback(value));
+					break;
+
+				case Array:
+					mapped.push([key, value]);
+					break;
+
+				default:
+					mapped[key] = value;
+			}
+		}
+
+		return mapped;
+	}
+
+	/**
+	 * Get element by identifier or callback.
+	 * @param {*} parameters - The element identifier or callback function.
+	 * @returns The finded element or undefined.
+	 */
+	get(parameters) {
+		const constructor = parameters?.constructor?.name;
+		if (constructor === "Function") {
+			for (const value of this.values()) {
+				const exists = parameters(value);
+				if (exists) return value;
+			}
+		} else return super.get(parameters);
+		return undefined;
+	}
+
+	/**
+	 * Formatting collection to object.
+	 * @returns Object as collection parameters in format { key: value }.
 	 */
 	toObject() {
 		return Object.fromEntries(this);
 	}
 
 	/**
-	 * Formatting collection to array
-	 * @returns Array in format [[key, value], ...]
+	 * Formatting collection to array.
+	 * @returns Array in format [[key, value], ...].
 	 */
 	toArray() {
 		return Array.from(this);
