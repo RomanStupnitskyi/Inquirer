@@ -123,6 +123,7 @@ export class BaseManager {
 
 	/**
 	 * Initialize a manager module
+	 * @private
 	 * @param {class} Module - The module class to be initialized
 	 * @returns {object} The initialized module
 	 */
@@ -150,6 +151,7 @@ export class BaseManager {
 
 	/**
 	 * Load module paths
+	 * @private
 	 * @param {string} path - The path to the modules
 	 * @returns {Promise<Array>} An array of module paths
 	 */
@@ -176,6 +178,7 @@ export class BaseManager {
 
 	/**
 	 * Imports a module from the specified file path
+	 * @private
 	 * @param {string} pathToModule - The file path of the module to be imported
 	 * @returns {Promise<object>} A promise that resolves to the imported module
 	 */
@@ -202,6 +205,7 @@ export class BaseManager {
 
 	/**
 	 * Determines if a given value is a class constructor
+	 * @private
 	 * @param {*} input - The value to check
 	 * @returns {boolean} True if input is a class constructor, false otherwise
 	 */

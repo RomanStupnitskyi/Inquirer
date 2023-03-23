@@ -3,12 +3,25 @@ import { scan } from "fs-nextra";
 
 import { Collection } from "../../extensions/Collection.js";
 import { Logger } from "../../extensions/Logger.js";
+import { BaseManager } from "./BaseManager.js";
 
 /**
  * Base store class
+ * @class
+ * @extends Collection
  * @since 0.0.1
  */
 export class BaseStore extends Collection {
+	/**
+	 * Creates a new instance of the BaseStore class.
+	 * @constructor
+	 * @param {object} inquirer - Inquirer client.
+	 * @param {object} options - Options object.
+	 * @param {string} options.name - Name of the store.
+	 * @param {string} options.path - Path of the store.
+	 * @param {boolean} options.sortManagers - Whether to sort managers.
+	 * @param {object[]} values - Values to set in the collection.
+	 */
 	constructor(inquirer, { name, path, sortManagers = false }, values = []) {
 		super({ assignProperties: true }, values);
 		this.inquirer = inquirer;
@@ -40,7 +53,9 @@ export class BaseStore extends Collection {
 	}
 
 	/**
-	 * Load store managers
+	 * Loads all the managers from the given path
+	 * @async
+	 * @returns {Promise<void>} Promise object representing the completion of loading managers
 	 */
 	async loadManagers() {
 		try {
@@ -71,7 +86,9 @@ export class BaseStore extends Collection {
 	}
 
 	/**
-	 * Initialize store managers
+	 * Initializes all the managers and prepares their modules
+	 * @async
+	 * @returns {Promise<number>} Promise object representing the completion of manager initialization with the size of all the modules loaded
 	 */
 	async initializeManagers() {
 		try {
@@ -111,6 +128,7 @@ export class BaseStore extends Collection {
 
 	/**
 	 * Load managers' directories
+	 * @private
 	 * @returns Managers paths Array
 	 */
 	async _loadManagersDirectories(path) {
@@ -122,6 +140,7 @@ export class BaseStore extends Collection {
 
 	/**
 	 * Load path to the manager file
+	 * @private
 	 * @param {*} directory The manager's directory
 	 * @returns Path to the manager file
 	 */
@@ -137,6 +156,7 @@ export class BaseStore extends Collection {
 
 	/**
 	 * Import manager by path
+	 * @private
 	 * @param {*} pathToManager Path to manager file
 	 * @returns Manager class
 	 */
@@ -145,13 +165,22 @@ export class BaseStore extends Collection {
 		const Manager = ManagerFile.default;
 		if (!Manager)
 			this._logger.fatal(
-				`${pathToManager} Manager is not defined or exported without default`
+				pathToManager,
+				`Manager is not defined or exported without default`
+			);
+		if (!this._isClass(Manager))
+			this._logger.fatal(pathToManager, `Manager must be a class`);
+		if (Object.getPrototypeOf(Manager) !== BaseManager)
+			this._logger.fatal(
+				pathToManager,
+				`Manager is not instanceof by base manager class`
 			);
 		return Manager;
 	}
 
 	/**
 	 * Check the value is a class
+	 * @private
 	 * @param {*} input The value to check
 	 * @returns Boolean value
 	 */

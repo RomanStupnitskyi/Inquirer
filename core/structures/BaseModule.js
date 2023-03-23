@@ -90,6 +90,7 @@ export class BaseModule {
 
 	/**
 	 * Assign module options
+	 * @private
 	 * @param {*} options The module options
 	 * @param {*} optionsArguments The options arguments
 	 */
@@ -128,6 +129,7 @@ export class BaseModule {
 
 	/**
 	 * Handle option's value
+	 * @private
 	 * @param {*} option The option
 	 * @returns value or undefined
 	 */
